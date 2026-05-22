@@ -1,0 +1,58 @@
+{
+  "name": "n8n-nodes-tracepass",
+  "version": "1.0.0",
+  "description": "n8n community node for TracePass — automate EU Digital Product Passport workflows: products, passports, EPCIS supply-chain events.",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "tracepass",
+    "digital-product-passport",
+    "dpp",
+    "epcis",
+    "gs1",
+    "espr"
+  ],
+  "license": "MIT",
+  "homepage": "https://www.tracepass.eu",
+  "author": {
+    "name": "TracePass LTD",
+    "email": "info@tracepass.eu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/malinoto/n8n-nodes-tracepass.git"
+  },
+  "engines": {
+    "node": ">=20.15"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/TracePassApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/TracePass/TracePass.node.js"
+    ]
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "*",
+    "eslint": "9.39.4",
+    "prettier": "3.8.3",
+    "typescript": "5.9.3"
+  }
+}

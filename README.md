@@ -1,0 +1,99 @@
+# n8n-nodes-tracepass
+
+This is an n8n community node. It lets you automate
+**[TracePass](https://www.tracepass.eu)** — the EU Digital Product
+Passport platform — in your n8n workflows.
+
+TracePass generates compliant Digital Product Passports (DPPs) for EU
+regulations (ESPR, the Battery Regulation, and more). This node lets
+you create and manage products, passports, and GS1 EPCIS 2.0
+supply-chain events directly from n8n — no code.
+
+[n8n](https://n8n.io) is a fair-code licensed workflow automation
+platform.
+
+[Installation](#installation) ·
+[Operations](#operations) ·
+[Credentials](#credentials) ·
+[Example workflows](#example-workflows) ·
+[Resources](#resources)
+
+## Installation
+
+Follow the
+[community nodes installation guide](https://docs.n8n.io/integrations/community-nodes/installation/)
+in the n8n documentation.
+
+In n8n: **Settings → Community Nodes → Install**, then enter
+`n8n-nodes-tracepass`.
+
+## Operations
+
+### Product
+
+- **Create** — add a product to the catalogue
+- **Get** — retrieve a product by ID
+- **Get Many** — list products, with category / search filters
+- **Update** — update a product's name, model, or description
+
+### Passport
+
+- **Create** — create a Digital Product Passport (consumes a plan
+  DPP slot — billable; opt in to overage with *Confirm Overage
+  Charge*)
+- **Get** / **Get by Serial** — retrieve a passport by ID or by its
+  serial number
+- **Get Many** — list passports, with status / product filters
+- **Update Field** — set the value of one passport field
+- **Suspend** — suspend a published passport (reversible)
+- **Archive** — archive a passport (**irreversible** — the public QR
+  permanently 404s)
+
+### EPCIS Event
+
+- **Export** — export a passport's events as a GS1 EPCIS 2.0
+  document (included on Starter plans and up)
+- **Capture** — submit EPCIS 2.0 events (requires the EPCIS add-on)
+- **Get Capture Job** — poll an async capture job
+- **Query** — query the EPCIS event store with the standard EPCIS
+  query filters (requires the EPCIS add-on)
+
+## Credentials
+
+You need a TracePass API key. In the TracePass dashboard, go to
+**Developer → API Keys** and create a key (it starts with `tp_`).
+
+In n8n, create a **TracePass API** credential and paste the key. The
+*Base URL* defaults to `https://app.tracepass.eu` — change it only
+for a self-hosted or staging deployment. Use **Test** to verify the
+key before building a workflow.
+
+## Example workflows
+
+**Shopify → TracePass** — on a new Shopify order, create a passport
+(product mapped by SKU, serial = order ID), then email the QR code
+to the customer.
+
+**Daily analytics digest** — a Schedule trigger lists yesterday's
+passports and posts a summary to Slack.
+
+**CSV → passports** — read a CSV of serial numbers and create a
+passport per row.
+
+**Supplier follow-up** — a Schedule trigger lists supplier requests
+older than seven days and sends reminder emails.
+
+## Compatibility
+
+Requires n8n 1.x. Tested against the current n8n community-node API
+(`n8nNodesApiVersion: 1`).
+
+## Resources
+
+- [TracePass API documentation](https://www.tracepass.eu/docs)
+- [TracePass](https://www.tracepass.eu)
+- [n8n community nodes documentation](https://docs.n8n.io/integrations/#community-nodes)
+
+## License
+
+[MIT](LICENSE.md)
