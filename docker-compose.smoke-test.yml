@@ -1,0 +1,70 @@
+# Smoke-test rig for the TracePass n8n community node.
+#
+# Runs a fresh n8n instance on the shared tracepass network so it can
+# reach tracepass-platform (172.70.0.10:3000) directly, and bind-mounts
+# the built `dist/` of this repo into n8n's custom-extensions folder
+# so the node loads exactly the way an `npm install n8n-nodes-tracepass`
+# would.
+#
+# This is NOT meant for production or for n8n-node dev's hot-reload
+# loop — it's a one-shot "install the built artefact in a real n8n,
+# click through every operation, confirm it works" rig before we
+# submit to the community-node registry.
+#
+# Usage:
+#
+#   1. Build the node:
+#        npm run build
+#   2. Bring n8n up:
+#        docker compose -f docker-compose.smoke-test.yml up -d
+#   3. Open http://localhost:5678
+#      → register a local owner account on first boot
+#      → settings → Community Nodes → TracePass should already be
+#        installed (loaded from /home/node/.n8n/custom)
+#      → create a TracePass API credential pointing at
+#        http://tracepass-platform:3000 (the in-network hostname)
+#      → drag a TracePass node onto a canvas, walk through the
+#        checklist in TEST-CHECKLIST.md
+#   4. When done:
+#        docker compose -f docker-compose.smoke-test.yml down -v
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: tracepass-n8n-smoke
+    restart: "no"
+    ports:
+      - "5678:5678"
+    environment:
+      # Use a basic-auth-disabled local instance — fine for a 30-min
+      # smoke session on localhost. Owner setup runs on first boot.
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:5678/
+      - GENERIC_TIMEZONE=Europe/Sofia
+      # Trust the bind-mounted custom extension as if installed from
+      # the community-node registry. n8n auto-discovers any package
+      # in /home/node/.n8n/custom that has the n8n manifest key.
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+      # Suppress the deprecation/UM banners for a cleaner UI in the
+      # screenshots / recordings of the smoke test.
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_TEMPLATES_ENABLED=false
+    volumes:
+      - n8n-data:/home/node/.n8n
+      # The built dist of this repo IS the installed community node.
+      # We mount the whole repo so n8n's custom-extension loader sees
+      # the manifest (package.json) alongside the dist files.
+      - ./:/home/node/.n8n/custom/n8n-nodes-tracepass:ro
+    networks:
+      - tracepass
+
+volumes:
+  n8n-data:
+
+networks:
+  tracepass:
+    external: true
