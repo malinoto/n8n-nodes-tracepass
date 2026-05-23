@@ -22,9 +22,9 @@ export const epcisOperations: INodeProperties[] = [
 			{
 				name: 'Export',
 				value: 'export',
-				action: 'Export a passport s epcis events',
+				action: 'Export EPCIS events for a passport',
 				description:
-					'Export a passport\'s supply-chain events as an EPCIS 2.0 document (included on Starter and up)',
+					"Retrieve a passport's supply-chain events as an EPCIS 2.0 document. Included on Starter and up.",
 				routing: {
 					request: {
 						method: 'GET',
@@ -36,7 +36,7 @@ export const epcisOperations: INodeProperties[] = [
 				name: 'Capture',
 				value: 'capture',
 				action: 'Capture EPCIS events',
-				description: 'Submit EPCIS 2.0 events to the Capture interface (requires the EPCIS add-on)',
+				description: 'Submit EPCIS 2.0 events to the capture interface. Requires the EPCIS add-on.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -60,7 +60,7 @@ export const epcisOperations: INodeProperties[] = [
 				name: 'Query',
 				value: 'query',
 				action: 'Query the EPCIS event store',
-				description: 'Query captured EPCIS events (requires the EPCIS add-on)',
+				description: 'Query captured EPCIS events. Requires the EPCIS add-on.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -81,6 +81,7 @@ export const epcisFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0',
 		description: 'The TracePass ID of the passport whose events to export',
 		displayOptions: {
 			show: { resource: ['epcis'], operation: ['export'] },
@@ -93,6 +94,7 @@ export const epcisFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. cap_8f3d2a1b9c7e6d5f',
 		description: 'The capture job ID returned by a Capture operation',
 		displayOptions: {
 			show: { resource: ['epcis'], operation: ['captureJob'] },

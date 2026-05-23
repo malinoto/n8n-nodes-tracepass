@@ -34,6 +34,7 @@ export class TracePassApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			required: true,
+			placeholder: 'e.g. tp_0123456789abcdef0123456789abcdef',
 			description:
 				'Your TracePass API key (starts with "tp_"). Create one in the TracePass dashboard under Developer → API Keys.',
 		},
@@ -42,6 +43,7 @@ export class TracePassApi implements ICredentialType {
 			name: 'baseUrl',
 			type: 'string',
 			default: 'https://app.tracepass.eu',
+			placeholder: 'e.g. https://app.tracepass.eu',
 			description:
 				'The TracePass app base URL. Change this only for a self-hosted or staging deployment.',
 		},

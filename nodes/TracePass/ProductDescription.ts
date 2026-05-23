@@ -34,7 +34,7 @@ export const productOperations: INodeProperties[] = [
 				name: 'Get',
 				value: 'get',
 				action: 'Get a product',
-				description: 'Retrieve a single product by ID',
+				description: 'Retrieve a product by ID',
 				routing: {
 					request: {
 						method: 'GET',
@@ -46,7 +46,7 @@ export const productOperations: INodeProperties[] = [
 				name: 'Get Many',
 				value: 'getAll',
 				action: 'Get many products',
-				description: 'Retrieve a list of products',
+				description: 'List many products',
 				routing: {
 					request: {
 						method: 'GET',
@@ -58,7 +58,7 @@ export const productOperations: INodeProperties[] = [
 				name: 'Update',
 				value: 'update',
 				action: 'Update a product',
-				description: 'Update an existing product',
+				description: 'Update one or more product fields',
 				routing: {
 					request: {
 						method: 'PATCH',
@@ -79,6 +79,7 @@ export const productFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0',
 		description: 'The TracePass ID of the product',
 		displayOptions: {
 			show: { resource: ['product'], operation: ['get', 'update'] },
@@ -91,6 +92,7 @@ export const productFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. Acme Cordless Drill',
 		description: 'Name of the product',
 		displayOptions: {
 			show: { resource: ['product'], operation: ['create'] },
@@ -105,6 +107,7 @@ export const productFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. ACD-2024-PRO',
 		description: 'Model or SKU identifier of the product',
 		displayOptions: {
 			show: { resource: ['product'], operation: ['create'] },
@@ -146,6 +149,7 @@ export const productFields: INodeProperties[] = [
 		name: 'description',
 		type: 'string',
 		default: '',
+		placeholder: 'e.g. 18V brushless cordless drill with two-speed transmission',
 		description: 'Optional description of the product',
 		displayOptions: {
 			show: { resource: ['product'], operation: ['create'] },

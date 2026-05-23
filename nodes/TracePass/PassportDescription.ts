@@ -23,7 +23,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Archive',
 				value: 'archive',
 				action: 'Archive a passport',
-				description: 'Archive a passport (irreversible — the public QR will permanently 404)',
+				description: 'Permanently archive a passport. The public QR will return 404.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -35,7 +35,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Create',
 				value: 'create',
 				action: 'Create a passport',
-				description: 'Create a Digital Product Passport (consumes a plan DPP slot — billable)',
+				description: 'Create a new Digital Product Passport. Consumes a plan DPP slot.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -47,7 +47,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Get',
 				value: 'get',
 				action: 'Get a passport',
-				description: 'Retrieve a single passport by ID',
+				description: 'Retrieve a passport by ID',
 				routing: {
 					request: {
 						method: 'GET',
@@ -71,7 +71,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Get Many',
 				value: 'getAll',
 				action: 'Get many passports',
-				description: 'Retrieve a list of passports',
+				description: 'List many passports',
 				routing: {
 					request: {
 						method: 'GET',
@@ -83,7 +83,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Suspend',
 				value: 'suspend',
 				action: 'Suspend a passport',
-				description: 'Suspend a published passport (reversible — the QR shows a suspended state)',
+				description: 'Suspend a published passport. Reversible. The QR shows a suspended state.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -116,6 +116,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0',
 		description: 'The TracePass ID of the passport',
 		displayOptions: {
 			show: {
@@ -131,6 +132,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. SN-2026-00042',
 		description: 'The product unit serial number',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['getBySerial'] },
@@ -143,6 +145,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0',
 		description: 'The product this passport belongs to',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'] },
@@ -157,6 +160,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. 04012345678901',
 		description: 'The 14-digit GS1 GTIN',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'] },
@@ -171,6 +175,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. SN-2026-00042',
 		description: 'A unique serial number for this product unit',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'] },
@@ -200,6 +205,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'string',
 		required: true,
 		default: '',
+		placeholder: 'e.g. batteryCapacity',
 		description: 'The template field key to update',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['updateField'] },
@@ -210,6 +216,7 @@ export const passportFields: INodeProperties[] = [
 		name: 'fieldValue',
 		type: 'string',
 		default: '',
+		placeholder: 'e.g. 5000',
 		description: 'The new value for the field',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['updateField'] },
