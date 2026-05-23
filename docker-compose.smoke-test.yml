@@ -43,10 +43,15 @@ services:
       - N8N_PROTOCOL=http
       - WEBHOOK_URL=http://localhost:5678/
       - GENERIC_TIMEZONE=Europe/Sofia
-      # Trust the bind-mounted custom extension as if installed from
-      # the community-node registry. n8n auto-discovers any package
-      # in /home/node/.n8n/custom that has the n8n manifest key.
-      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
+      # n8n auto-scans `~/.n8n/custom/node_modules/*` for packages
+      # carrying the `n8n` manifest key (see n8n's
+      # load-nodes-and-credentials.js — it does
+      # `readdir(customExtensionDir/node_modules)`, NOT a flat scan
+      # of the custom dir). So we mount the repo to
+      # /home/node/.n8n/custom/node_modules/n8n-nodes-tracepass
+      # — `node_modules/<pkg>` is the layout n8n discovers. No env
+      # var needed; the env var (CUSTOM_EXTENSION_ENV) is for ADDING
+      # alternate scan roots, not for the default one.
       # Suppress the deprecation/UM banners for a cleaner UI in the
       # screenshots / recordings of the smoke test.
       - N8N_DIAGNOSTICS_ENABLED=false
@@ -56,9 +61,10 @@ services:
     volumes:
       - n8n-data:/home/node/.n8n
       # The built dist of this repo IS the installed community node.
-      # We mount the whole repo so n8n's custom-extension loader sees
-      # the manifest (package.json) alongside the dist files.
-      - ./:/home/node/.n8n/custom/n8n-nodes-tracepass:ro
+      # Mounted under `custom/node_modules/<pkg>/` so n8n's auto-scan
+      # finds it (it reads `custom/node_modules/`, then iterates each
+      # entry, then loads via the entry's package.json `n8n` key).
+      - ./:/home/node/.n8n/custom/node_modules/n8n-nodes-tracepass:ro
     networks:
       - tracepass
 

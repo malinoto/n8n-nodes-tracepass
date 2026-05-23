@@ -3,50 +3,44 @@
   <defs>
     <!--
       Pixel-grid TP, lifted 1:1 from the canonical brand mark in
-      tracepass/public/tracepass-logo.svg. Icon geometry: each pixel
-      is 3 units wide on a 4-unit pitch (1-unit gap), so the glyph
-      block spans x:0..30, y:0..19. The marketing logo's gradient is
-      `userSpaceOnUse` over (0,0)-(30,20) — we mirror those bounds
-      via a nested <svg viewBox="0 0 30 20"> centered inside the
-      60×60 card, scaled so the glyph fills with 7.5u of padding on
-      each side.
+      tracepass/public/tracepass-logo.svg. Each pixel is 3 units wide
+      on a 4-unit pitch (1-unit gap). The glyph block tightly bounds
+      to x:0..30 (P right edge at 27+3), y:0..19 (bottom-most pixel
+      at y=16 with height 3).
 
-      Card colors match the marketing OG-image accent: black→orange
-      diagonal. The dark variant inverts to a near-black card with
-      the glyph rendered in the warm orange so it still reads as
-      "TracePass" on n8n's dark theme without losing the gradient.
+      Inner viewBox is 30×19 (the tight bound), scaled to width=44 →
+      height ≈ 27.87 on the 60×60 card, centered: x=(60-44)/2=8,
+      y=(60-27.87)/2≈16.07.
     -->
     <linearGradient id="tpCard" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#111827"/>
       <stop offset="1" stop-color="#F97316"/>
     </linearGradient>
-    <linearGradient id="tpGlyph" x1="0" y1="0" x2="30" y2="20" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#ffffff"/>
-    </linearGradient>
   </defs>
   <rect width="60" height="60" rx="12" fill="url(#tpCard)"/>
-  <svg x="9" y="14" width="42" height="28" viewBox="0 0 30 20">
-    <!-- T: top bar (3 pixels) + stem (5 pixels down from the bar) -->
-    <rect x="0"  y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="4"  y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="8"  y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="4"  y="4"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="4"  y="8"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="4"  y="12" width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="4"  y="16" width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <!-- P: left stem (5 pixels down) + top bar (3 pixels) + right loop edge (3 pixels) + loop bottom (2 pixels) -->
-    <rect x="15" y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="15" y="4"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="15" y="8"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="15" y="12" width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="15" y="16" width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="19" y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="23" y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="27" y="0"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="27" y="4"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="27" y="8"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="19" y="8"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
-    <rect x="23" y="8"  width="3" height="3" fill="url(#tpGlyph)" rx="0.5"/>
+  <svg x="8" y="16.07" width="44" height="27.87" viewBox="0 0 30 19" preserveAspectRatio="xMidYMid meet">
+    <g fill="#ffffff">
+      <!-- T: top bar (3 pixels) + stem (5 pixels down from the bar) -->
+      <rect x="0"  y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="4"  y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="8"  y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="4"  y="4"  width="3" height="3" rx="0.5"/>
+      <rect x="4"  y="8"  width="3" height="3" rx="0.5"/>
+      <rect x="4"  y="12" width="3" height="3" rx="0.5"/>
+      <rect x="4"  y="16" width="3" height="3" rx="0.5"/>
+      <!-- P: left stem (5 pixels) + top bar (3) + right loop edge (3) + loop bottom (2) -->
+      <rect x="15" y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="15" y="4"  width="3" height="3" rx="0.5"/>
+      <rect x="15" y="8"  width="3" height="3" rx="0.5"/>
+      <rect x="15" y="12" width="3" height="3" rx="0.5"/>
+      <rect x="15" y="16" width="3" height="3" rx="0.5"/>
+      <rect x="19" y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="23" y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="27" y="0"  width="3" height="3" rx="0.5"/>
+      <rect x="27" y="4"  width="3" height="3" rx="0.5"/>
+      <rect x="27" y="8"  width="3" height="3" rx="0.5"/>
+      <rect x="19" y="8"  width="3" height="3" rx="0.5"/>
+      <rect x="23" y="8"  width="3" height="3" rx="0.5"/>
+    </g>
   </svg>
 </svg>
