@@ -28,6 +28,11 @@ export class TracePass implements INodeType {
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Automate EU Digital Product Passport workflows with TracePass',
+		// Search synonyms — `alias` lives on the sibling .node.json codex
+		// file (the CodexData type), NOT on INodeTypeDescription. The
+		// node picker indexes those entries alongside displayName +
+		// description so "dpp", "epcis", "battery passport" all surface
+		// TracePass. See TracePass.node.json.
 		defaults: {
 			name: 'TracePass',
 		},

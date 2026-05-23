@@ -10,7 +10,13 @@
     "dpp",
     "epcis",
     "gs1",
-    "espr"
+    "espr",
+    "battery-passport",
+    "eu-battery-regulation",
+    "sustainability",
+    "supply-chain",
+    "traceability",
+    "compliance"
   ],
   "license": "MIT",
   "homepage": "https://www.tracepass.eu",

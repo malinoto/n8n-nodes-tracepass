@@ -9,8 +9,11 @@
       at y=16 with height 3).
 
       Inner viewBox is 30×19 (the tight bound), scaled to width=44 →
-      height ≈ 27.87 on the 60×60 card, centered: x=(60-44)/2=8,
-      y=(60-27.87)/2≈16.07.
+      height ≈ 27.87 on the 60×60 card. Geometric center would be
+      y=(60-27.87)/2≈16.07 but the glyph's visual mass sits in the
+      upper half (T bar + P bowl both at the top), so pure-geometric
+      centering reads as top-heavy. Optical center: nudge y down ~3u
+      so the visual weight balances around the card's midline.
     -->
     <linearGradient id="tpCard" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#111827"/>
@@ -18,7 +21,7 @@
     </linearGradient>
   </defs>
   <rect width="60" height="60" rx="12" fill="url(#tpCard)"/>
-  <svg x="8" y="16.07" width="44" height="27.87" viewBox="0 0 30 19" preserveAspectRatio="xMidYMid meet">
+  <svg x="8" y="17.5" width="44" height="27.87" viewBox="0 0 30 19" preserveAspectRatio="xMidYMid meet">
     <g fill="#ffffff">
       <!-- T: top bar (3 pixels) + stem (5 pixels down from the bar) -->
       <rect x="0"  y="0"  width="3" height="3" rx="0.5"/>

@@ -3,6 +3,19 @@
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Productivity", "Development"],
+	"alias": [
+		"DPP",
+		"Digital Product Passport",
+		"EPCIS",
+		"GS1",
+		"ESPR",
+		"EU Battery Regulation",
+		"Battery Passport",
+		"Sustainability",
+		"Supply Chain",
+		"Traceability",
+		"Compliance"
+	],
 	"resources": {
 		"credentialDocumentation": [
 			{
