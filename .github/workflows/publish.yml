@@ -81,20 +81,38 @@ jobs:
         with:
           node-version: 'lts/*'
           cache: 'npm'
+          # The OIDC exchange needs npm to know the registry it's
+          # authenticating to. Without this, npm publish bails with
+          # ENEEDAUTH before it can attempt the OIDC handshake.
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm
+        # Trusted publishing via OIDC needs npm CLI ≥ 11.5.1.
+        # Node 24 LTS ships with 11.12.x which would suffice — but
+        # pinning to @latest here makes the workflow robust to whatever
+        # Node minor the GitHub runner happens to be on at the time.
+        run: npm install --global npm@latest
 
       - name: Install dependencies
         run: 'npm ci'
 
       - name: Release
-        # Publishes to npm with a provenance attestation (requires id-token: write above).
-        # Lint and build run automatically as part of the release process.
-        #
-        # Option A (OIDC): leave NPM_TOKEN unset — the token step is skipped and
-        #   npm uses the OIDC exchange instead.
-        # Option B (token): set NPM_TOKEN in repo secrets — it is written to
-        #   .npmrc here before publishing.
+        # Publishes to npm with a provenance attestation.
+        # - OIDC trusted publishing engages automatically because:
+        #     * id-token: write permission (set above)
+        #     * setup-node configured the registry-url
+        #     * npm >= 11.5.1 (upgraded above)
+        #     * package.json's publishConfig.provenance is true
+        # - No NPM_TOKEN secret is needed; npm exchanges the GitHub
+        #   OIDC token for a short-lived publish credential per run.
+        # - Token-based fallback is available by setting NPM_TOKEN in
+        #   repo secrets; OIDC takes precedence when both are present.
         run: |
-          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          if [ -n "$NODE_AUTH_TOKEN" ]; then
+            echo "Using NPM_TOKEN-based auth (OIDC trusted publishing not in use)"
+          else
+            echo "Using OIDC trusted publishing"
+          fi
           npm run release
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
