@@ -103,16 +103,17 @@ jobs:
         #     * setup-node configured the registry-url
         #     * npm >= 11.5.1 (upgraded above)
         #     * package.json's publishConfig.provenance is true
-        # - No NPM_TOKEN secret is needed; npm exchanges the GitHub
-        #   OIDC token for a short-lived publish credential per run.
-        # - Token-based fallback is available by setting NPM_TOKEN in
-        #   repo secrets; OIDC takes precedence when both are present.
-        run: |
-          if [ -n "$NODE_AUTH_TOKEN" ]; then
-            echo "Using NPM_TOKEN-based auth (OIDC trusted publishing not in use)"
-          else
-            echo "Using OIDC trusted publishing"
-          fi
-          npm run release
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        #     * NO _authToken is written to .npmrc — setup-node only
+        #       writes one when NODE_AUTH_TOKEN is present in env;
+        #       leaving it absent lets npm see "no token" and fall
+        #       through to OIDC. (If NODE_AUTH_TOKEN is set to an
+        #       empty string because the NPM_TOKEN secret doesn't
+        #       exist, npm reads the empty token literally, sends an
+        #       unauthenticated request, and bails with ENEEDAUTH —
+        #       never reaching the OIDC code path. That was the bug
+        #       in the v1.0.1 / v1.0.2 runs.)
+        # - To switch back to NPM_TOKEN auth (e.g. if Trusted
+        #   Publishing is ever revoked on the npm side), add
+        #   `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` here as an
+        #   env entry and create the NPM_TOKEN secret.
+        run: npm run release
