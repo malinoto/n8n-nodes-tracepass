@@ -49,6 +49,10 @@ export class TracePass implements INodeType {
 			headers: {
 				Accept: 'application/json',
 				'Content-Type': 'application/json',
+				// Identifies this client to the TracePass request log so v1
+				// traffic can be attributed to the n8n node vs the MCP server
+				// vs raw API integrations.
+				'X-TracePass-Source': 'n8n-node/1.0',
 			},
 		},
 		properties: [
