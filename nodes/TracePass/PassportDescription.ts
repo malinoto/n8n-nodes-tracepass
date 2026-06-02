@@ -44,6 +44,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Create Batch',
+				value: 'createBatch',
+				action: 'Create many passports in one call',
+				description:
+					'Create up to 100 passport SHELLS in one call (productId + GTIN + serial each). Field values are NOT set here — populate them afterwards with Update Field or AI extraction. Partial success per item; consumes one plan DPP slot per passport.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '/api/v1/passports/batch',
+					},
+				},
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				action: 'Get a passport',
@@ -193,6 +206,36 @@ export const passportFields: INodeProperties[] = [
 			'Whether to accept a per-passport overage charge if the account is over its plan DPP quota. Leave off to fail safely when over quota.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'confirmOverage' },
+		},
+	},
+	// ---- Create Batch ----------------------------------------------
+	{
+		displayName: 'Passports (JSON)',
+		name: 'batchPassports',
+		type: 'json',
+		required: true,
+		default: '=[\n  { "productId": "", "gs1": { "gtin": "", "serialNumber": "" } }\n]',
+		description:
+			'An array of up to 100 passports to create. Each item needs productId + gs1.gtin + gs1.serialNumber. Wire this from an upstream node (e.g. a Spreadsheet/HTTP node) by mapping its rows into this shape. Field values are not accepted here — create the shells, then set fields with Update Field.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['createBatch'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'passports' },
+		},
+	},
+	{
+		displayName: 'Confirm Overage Charge',
+		name: 'batchConfirmOverage',
+		type: 'boolean',
+		default: false,
+		description:
+			'Whether to accept per-passport overage charges if the batch pushes the account over its plan DPP quota. Leave off to fail safely (402) when the whole batch would exceed quota.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['createBatch'] },
 		},
 		routing: {
 			send: { type: 'body', property: 'confirmOverage' },
