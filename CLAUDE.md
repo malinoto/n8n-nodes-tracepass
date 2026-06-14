@@ -56,6 +56,16 @@ npm run lint       # n8n-node lint — n8n node-spec linter (naming, display rul
 Both must pass before committing a node change. `npm run build` regenerates
 `dist/`; the published package serves from `dist/` (see `files` in package.json).
 
+**The n8n linter is the authority on operation `name`/`action`/description wording
+— it overrides style intuition.** Two rules it enforces that bite when adding an
+operation: (1) `options` must be **alphabetised by `name`** (e.g. a new "Compliance"
+op sorts between "Archive" and "Create" — the linter's autofix message tells you the
+exact order); (2) `action` must be **sentence-case** — it rejected a possessive
+`"Check a passport's compliance"` but accepted `"Check passport compliance"`. Don't
+fight it for prettier text; ship what `npm run lint` accepts. The lint pass also
+covers most verified-node guideline checks (declarative, no runtime deps, naming) —
+a new *action* on an existing resource doesn't risk the verified badge.
+
 ## Node structure (declarative — no hand-written `execute()`)
 
 - `nodes/TracePass/TracePass.node.ts` — node definition. `requestDefaults.baseURL`
