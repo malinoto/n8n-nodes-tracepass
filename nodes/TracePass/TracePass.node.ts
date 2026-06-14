@@ -42,6 +42,22 @@ export class TracePass implements INodeType {
 			{
 				name: 'tracePassApi',
 				required: true,
+				// Shown when the Authentication selector is "Access Token"
+				// (the default). Either this OR the OAuth2 credential is used.
+				displayOptions: {
+					show: {
+						authentication: ['accessToken'],
+					},
+				},
+			},
+			{
+				name: 'tracePassOAuth2Api',
+				required: true,
+				displayOptions: {
+					show: {
+						authentication: ['oAuth2'],
+					},
+				},
 			},
 		],
 		requestDefaults: {
@@ -56,6 +72,25 @@ export class TracePass implements INodeType {
 			},
 		},
 		properties: [
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Access Token',
+						value: 'accessToken',
+						description: 'A tp_ API key — simplest, for server-to-server use',
+					},
+					{
+						name: 'OAuth2',
+						value: 'oAuth2',
+						description: "Authorize on a user's behalf with scoped, revocable access",
+					},
+				],
+				default: 'accessToken',
+			},
 			{
 				displayName: 'Resource',
 				name: 'resource',

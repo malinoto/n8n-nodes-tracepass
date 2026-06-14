@@ -72,13 +72,25 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 
 ## Credentials
 
-You need a TracePass API key. In the TracePass dashboard, go to
-**Developer → API Keys** and create a key (it starts with `tp_`).
+The node supports two authentication methods, chosen via the
+**Authentication** dropdown:
 
-In n8n, create a **TracePass API** credential and paste the key. The
-*Base URL* defaults to `https://app.tracepass.eu` — change it only
-for a self-hosted or staging deployment. Use **Test** to verify the
-key before building a workflow.
+**Access Token (API key)** — the simplest, best for server-to-server
+automation. In the TracePass dashboard, go to **Developer → API Keys**,
+create a key (it starts with `tp_`), then create a **TracePass API**
+credential in n8n and paste it. Use **Test** to verify the key before
+building a workflow.
+
+**OAuth2** — authorize on a specific user's behalf with scoped,
+revocable access. Register an OAuth app in the TracePass dashboard under
+**Developer → OAuth Apps** (a public/PKCE client works), then create a
+**TracePass OAuth2 API** credential in n8n and click **Connect** — you
+approve the requested scopes on a TracePass consent screen and n8n
+stores + refreshes the tokens. Request only the scopes your workflow
+needs (e.g. `passports:read passports:write offline_access`).
+
+For both, the *Base URL* defaults to `https://app.tracepass.eu` —
+change it only for a self-hosted or staging deployment.
 
 ## Example workflows
 
