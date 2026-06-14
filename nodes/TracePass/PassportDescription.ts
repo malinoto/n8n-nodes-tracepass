@@ -32,6 +32,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Archive by Serial',
+				value: 'archiveBySerial',
+				action: 'Archive a passport by serial',
+				description:
+					'Permanently archive a passport addressed by its serial number. The public QR will return 404. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/archive',
+					},
+				},
+			},
+			{
 				name: 'Compliance',
 				value: 'compliance',
 				action: 'Check passport compliance',
@@ -118,6 +131,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Suspend by Serial',
+				value: 'suspendBySerial',
+				action: 'Suspend a passport by serial',
+				description:
+					'Suspend a published passport addressed by its serial number. Reversible. If the serial is not unique in your account the API returns 409 \u2014 set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/suspend',
+					},
+				},
+			},
+			{
 				name: 'Update Field',
 				value: 'updateField',
 				action: 'Update a passport field',
@@ -126,6 +152,19 @@ export const passportOperations: INodeProperties[] = [
 					request: {
 						method: 'PATCH',
 						url: '=/api/v1/passports/{{$parameter["passportId"]}}/fields/{{$parameter["fieldKey"]}}',
+					},
+				},
+			},
+			{
+				name: 'Update Field by Serial',
+				value: 'updateFieldBySerial',
+				action: 'Update a passport field by serial',
+				description:
+					'Set the value of one field on a passport addressed by its serial number. If the serial is not unique in your account the API returns 409 \u2014 set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/fields/{{$parameter["fieldKey"]}}',
 					},
 				},
 			},
@@ -161,7 +200,22 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. SN-2026-00042',
 		description: 'The product unit serial number',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial'] },
+		},
+	},
+	{
+		displayName: 'GTIN (Disambiguator)',
+		name: 'serialGtin',
+		type: 'string',
+		default: '',
+		placeholder: 'e.g. 04012345678901',
+		description:
+			'Optional. A serial is unique only within a GTIN, so if the same serial exists under two GTINs in your account a serial-only call returns 409. Set the GTIN here to resolve the passport exactly.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'gtin' },
 		},
 	},
 	// ---- Create fields ---------------------------------------------
@@ -264,7 +318,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. batteryCapacity',
 		description: 'The template field key to update',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['updateField'] },
+			show: { resource: ['passport'], operation: ['updateField', 'updateFieldBySerial'] },
 		},
 	},
 	{
@@ -275,7 +329,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. 5000',
 		description: 'The new value for the field',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['updateField'] },
+			show: { resource: ['passport'], operation: ['updateField', 'updateFieldBySerial'] },
 		},
 		routing: {
 			send: { type: 'body', property: 'value' },

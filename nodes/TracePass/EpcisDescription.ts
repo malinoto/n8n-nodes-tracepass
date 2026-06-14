@@ -20,6 +20,18 @@ export const epcisOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Capture',
+				value: 'capture',
+				action: 'Capture EPCIS events',
+				description: 'Submit EPCIS 2.0 events to the capture interface. Requires the EPCIS add-on.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '/api/v1/epcis/capture',
+					},
+				},
+			},
+			{
 				name: 'Export',
 				value: 'export',
 				action: 'Export EPCIS events for a passport',
@@ -33,14 +45,15 @@ export const epcisOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Capture',
-				value: 'capture',
-				action: 'Capture EPCIS events',
-				description: 'Submit EPCIS 2.0 events to the capture interface. Requires the EPCIS add-on.',
+				name: 'Export by Serial',
+				value: 'exportBySerial',
+				action: 'Export EPCIS events for a passport by serial',
+				description:
+					"Retrieve a passport's EPCIS 2.0 events, addressed by its serial number. Included on Starter and up. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 — set the GTIN field to disambiguate.",
 				routing: {
 					request: {
-						method: 'POST',
-						url: '/api/v1/epcis/capture',
+						method: 'GET',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/epcis',
 					},
 				},
 			},
@@ -85,6 +98,34 @@ export const epcisFields: INodeProperties[] = [
 		description: 'The TracePass ID of the passport whose events to export',
 		displayOptions: {
 			show: { resource: ['epcis'], operation: ['export'] },
+		},
+	},
+	// ---- Serial + GTIN (export by serial) --------------------------
+	{
+		displayName: 'Serial Number',
+		name: 'serialNumber',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. SN-2026-00042',
+		description: 'The product unit serial number whose events to export',
+		displayOptions: {
+			show: { resource: ['epcis'], operation: ['exportBySerial'] },
+		},
+	},
+	{
+		displayName: 'GTIN (Disambiguator)',
+		name: 'serialGtin',
+		type: 'string',
+		default: '',
+		placeholder: 'e.g. 04012345678901',
+		description:
+			'Optional. A serial is unique only within a GTIN, so if the same serial exists under two GTINs in your account a serial-only call returns 409. Set the GTIN here to resolve the passport exactly.',
+		displayOptions: {
+			show: { resource: ['epcis'], operation: ['exportBySerial'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'gtin' },
 		},
 	},
 	// ---- Capture job ID --------------------------------------------

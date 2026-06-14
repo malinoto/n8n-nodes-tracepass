@@ -48,15 +48,23 @@ In n8n: **Settings → Community Nodes → Install**, then enter
   compliant_with_warnings / incomplete) with regulation-cited findings —
   missing required fields/parties, format issues, and per-category
   conditional rules
-- **Update Field** — set the value of one passport field
-- **Suspend** — suspend a published passport (reversible)
-- **Archive** — archive a passport (**irreversible** — the public QR
-  permanently 404s)
+- **Update Field** / **Update Field by Serial** — set the value of one
+  passport field, by ID or by serial
+- **Suspend** / **Suspend by Serial** — suspend a published passport
+  (reversible), by ID or by serial
+- **Archive** / **Archive by Serial** — archive a passport
+  (**irreversible** — the public QR permanently 404s), by ID or by serial
+
+The **by-serial** operations address a passport by your own serial number.
+A serial is unique only *within a GTIN*, so if the same serial exists under
+two GTINs in your account a serial-only call returns **409** — set the
+optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 
 ### EPCIS Event
 
-- **Export** — export a passport's events as a GS1 EPCIS 2.0
-  document (included on Starter plans and up)
+- **Export** / **Export by Serial** — export a passport's events as a
+  GS1 EPCIS 2.0 document, by ID or by serial (included on Starter plans
+  and up; the by-serial form takes the same optional GTIN disambiguator)
 - **Capture** — submit EPCIS 2.0 events (requires the EPCIS add-on)
 - **Get Capture Job** — poll an async capture job
 - **Query** — query the EPCIS event store with the standard EPCIS
