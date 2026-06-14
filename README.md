@@ -44,6 +44,10 @@ In n8n: **Settings → Community Nodes → Install**, then enter
 - **Get** / **Get by Serial** — retrieve a passport by ID or by its
   serial number
 - **Get Many** — list passports, with status / product filters
+- **Compliance** — get a three-tier compliance verdict (compliant /
+  compliant_with_warnings / incomplete) with regulation-cited findings —
+  missing required fields/parties, format issues, and per-category
+  conditional rules
 - **Update Field** — set the value of one passport field
 - **Suspend** — suspend a published passport (reversible)
 - **Archive** — archive a passport (**irreversible** — the public QR

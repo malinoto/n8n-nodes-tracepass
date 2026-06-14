@@ -82,3 +82,6 @@ Body shapes, response shapes, and limits must match the platform's v1 routes
 passport **shells** (`fields: {}`) — field values are NOT accepted in the batch
 body; they're set afterwards via Update Field or AI extraction. The `Create Batch`
 operation's description says so, on purpose.
+
+---
+*Part of the **TracePass workspace** (`~/projects/dpp`). Workspace-wide map, skills, and conventions live in `../.claude/` (CLAUDE.md + skills/ + agents/). Check there for cross-repo procedures (releases, category templates, locale passes, brand images) before reinventing them.*

@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-tracepass",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "n8n community node for TracePass — automate EU Digital Product Passport workflows: products, passports, EPCIS supply-chain events.",
   "keywords": [
     "n8n-community-node-package",

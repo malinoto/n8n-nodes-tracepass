@@ -32,6 +32,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Compliance',
+				value: 'compliance',
+				action: 'Check passport compliance',
+				description:
+					'Get a three-tier compliance verdict (compliant / compliant_with_warnings / incomplete) with regulation-cited findings — missing required fields/parties, format issues, and per-category conditional rules',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/compliance',
+					},
+				},
+			},
+			{
 				name: 'Create',
 				value: 'create',
 				action: 'Create a passport',
@@ -134,7 +147,7 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'updateField', 'suspend', 'archive'],
+				operation: ['get', 'compliance', 'updateField', 'suspend', 'archive'],
 			},
 		},
 	},
