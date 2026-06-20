@@ -75,6 +75,14 @@ a new *action* on an existing resource doesn't risk the verified badge.
   operations + fields. Each operation's `routing.request` maps to one v1 endpoint;
   each field's `routing.send` maps to a body/query property.
 - `credentials/TracePassApi.credentials.ts` — API key (`tp_…`) + base URL.
+  Sent as `Authorization: Bearer {{apiKey}}`. Shown when the node's
+  **Authentication** selector is **Access Token** (the default).
+- `credentials/TracePassOAuth2Api.credentials.ts` — OAuth 2.0 authorization-code
+  **+ PKCE** (`extends: ['oAuth2Api']`) against the platform's authorization
+  server (`/api/oauth/{authorize,token}`); n8n stores + auto-refreshes the
+  tokens. Shown when **Authentication** is **OAuth2**. The two credentials are
+  mutually exclusive (`displayOptions` on `authentication`) — API key for simple
+  server-to-server, OAuth2 for user-delegated least-privilege/revocable access.
 
 ### Operation labels stay literal (and English)
 
