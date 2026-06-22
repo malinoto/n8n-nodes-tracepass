@@ -119,6 +119,30 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get QR',
+				value: 'getQr',
+				action: 'Get a passport QR code',
+				description: 'Render the passport QR code. Returns SVG by default; set Format to png or JSON. Optionally apply the company brand colour or an explicit colour. Counts as one passport read against the daily cap.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/qr',
+					},
+				},
+			},
+			{
+				name: 'Get QR by Serial',
+				value: 'getQrBySerial',
+				action: 'Get a passport QR code by serial',
+				description: 'Render the passport QR code addressed by its serial number. Returns SVG by default; set Format to png or JSON. If the serial is not unique in your account the API returns 409 — set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/qr',
+					},
+				},
+			},
+			{
 				name: 'Suspend',
 				value: 'suspend',
 				action: 'Suspend a passport',
@@ -186,7 +210,7 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'updateField', 'suspend', 'archive'],
+				operation: ['get', 'compliance', 'updateField', 'suspend', 'archive', 'getQr'],
 			},
 		},
 	},
@@ -200,7 +224,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. SN-2026-00042',
 		description: 'The product unit serial number',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
 		},
 	},
 	{
@@ -212,11 +236,68 @@ export const passportFields: INodeProperties[] = [
 		description:
 			'Optional. A serial is unique only within a GTIN, so if the same serial exists under two GTINs in your account a serial-only call returns 409. Set the GTIN here to resolve the passport exactly.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
 		},
 		routing: {
 			send: { type: 'query', property: 'gtin' },
 		},
+	},
+	// ---- QR rendering options --------------------------------------
+	{
+		displayName: 'Format',
+		name: 'qrFormat',
+		type: 'options',
+		default: 'svg',
+		description: 'The QR output format',
+		options: [
+			{ name: 'JSON', value: 'json' },
+			{ name: 'PNG', value: 'png' },
+			{ name: 'SVG', value: 'svg' },
+		],
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getQr', 'getQrBySerial'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'format' },
+		},
+	},
+	{
+		displayName: 'QR Options',
+		name: 'qrOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getQr', 'getQrBySerial'] },
+		},
+		options: [
+			{
+				displayName: 'Use Company Branding',
+				name: 'useCompanyBranding',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to render the QR in the company brand colour instead of black',
+				routing: { send: { type: 'query', property: 'useCompanyBranding' } },
+			},
+			{
+				displayName: 'Color',
+				name: 'color',
+				type: 'color',
+				default: '',
+				placeholder: 'e.g. FF6600',
+				description: 'Foreground colour as a 6-char hex without "#". Overrides company branding.',
+				routing: { send: { type: 'query', property: 'color' } },
+			},
+			{
+				displayName: 'Background Color',
+				name: 'backgroundColor',
+				type: 'color',
+				default: '',
+				placeholder: 'e.g. FFFFFF',
+				description: 'Solid backing colour as a 6- or 8-char hex without "#" (8 chars = RGBA)',
+				routing: { send: { type: 'query', property: 'backgroundColor' } },
+			},
+		],
 	},
 	// ---- Create fields ---------------------------------------------
 	{

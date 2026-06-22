@@ -4,6 +4,7 @@ import { NodeConnectionTypes } from 'n8n-workflow';
 import { productOperations, productFields } from './ProductDescription';
 import { passportOperations, passportFields } from './PassportDescription';
 import { epcisOperations, epcisFields } from './EpcisDescription';
+import { templateOperations, templateFields } from './TemplateDescription';
 
 /**
  * TracePass — n8n community node.
@@ -14,10 +15,11 @@ import { epcisOperations, epcisFields } from './EpcisDescription';
  * (n8n's own HTTP layer makes the calls) — a requirement for n8n's
  * community-node verification.
  *
- * Three resources, mirroring the v1 API:
+ * Four resources, mirroring the v1 API:
  *   - Product   — the catalogue layer
  *   - Passport  — Digital Product Passports + their lifecycle
  *   - EPCIS     — GS1 EPCIS 2.0 supply-chain events
+ *   - Template  — DPP category field schemas (read-only reference)
  */
 export class TracePass implements INodeType {
 	description: INodeTypeDescription = {
@@ -112,6 +114,11 @@ export class TracePass implements INodeType {
 						value: 'product',
 						description: 'The catalogue layer — one product can have many passports',
 					},
+					{
+						name: 'Template',
+						value: 'template',
+						description: 'DPP category field schemas — discover regulatory requirements',
+					},
 				],
 				default: 'passport',
 			},
@@ -121,6 +128,8 @@ export class TracePass implements INodeType {
 			...passportFields,
 			...epcisOperations,
 			...epcisFields,
+			...templateOperations,
+			...templateFields,
 		],
 		usableAsTool: true,
 	};

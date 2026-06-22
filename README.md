@@ -44,6 +44,9 @@ In n8n: **Settings → Community Nodes → Install**, then enter
 - **Get** / **Get by Serial** — retrieve a passport by ID or by its
   serial number
 - **Get Many** — list passports, with status / product filters
+- **Get QR** / **Get QR by Serial** — render the passport QR code
+  (SVG / PNG / JSON), optionally in the company brand colour or an
+  explicit colour, by ID or by serial
 - **Compliance** — get a three-tier compliance verdict (compliant /
   compliant_with_warnings / incomplete) with regulation-cited findings —
   missing required fields/parties, format issues, and per-category
@@ -69,6 +72,18 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 - **Get Capture Job** — poll an async capture job
 - **Query** — query the EPCIS event store with the standard EPCIS
   query filters (requires the EPCIS add-on)
+
+### Template
+
+- **Get Many** — list the DPP category templates with their field
+  count, required-field count, governing regulation and version
+- **Get** — get the full regulatory field schema for one category
+  (every field with its key, label, type, required flag, access
+  level and governing regulation reference)
+
+Templates are read-only reference data — use them to discover what a
+compliant passport in a category requires *before* creating products
+and passports.
 
 ## Credentials
 
