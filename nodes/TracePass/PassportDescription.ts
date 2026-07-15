@@ -143,6 +143,18 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Registry Readiness',
+				value: 'registryReadiness',
+				action: 'Check passport registry readiness',
+				description: 'Check whether a passport would pass the EU DPP Registry\'s formal submission gate — returns { ready, findings[] } covering mandatory-field presence, correct formatting, and a resolvable public link. This is the registry\'s mechanical pre-submission check, not the substantive compliance verdict. Battery passports only.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/registry-readiness',
+					},
+				},
+			},
+			{
 				name: 'Suspend',
 				value: 'suspend',
 				action: 'Suspend a passport',
@@ -210,7 +222,7 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'updateField', 'suspend', 'archive', 'getQr'],
+				operation: ['get', 'compliance', 'registryReadiness', 'updateField', 'suspend', 'archive', 'getQr'],
 			},
 		},
 	},

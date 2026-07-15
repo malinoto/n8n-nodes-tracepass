@@ -51,6 +51,10 @@ In n8n: **Settings → Community Nodes → Install**, then enter
   compliant_with_warnings / incomplete) with regulation-cited findings —
   missing required fields/parties, format issues, and per-category
   conditional rules
+- **Registry Readiness** — check whether a passport would pass the EU DPP
+  Registry's formal submission gate (mandatory fields present, correct
+  formatting, a resolvable public link). The registry's mechanical
+  pre-submission check, not the substantive compliance verdict. Battery only
 - **Update Field** / **Update Field by Serial** — set the value of one
   passport field, by ID or by serial
 - **Suspend** / **Suspend by Serial** — suspend a published passport
