@@ -146,7 +146,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Registry Readiness',
 				value: 'registryReadiness',
 				action: 'Check passport registry readiness',
-				description: 'Check whether a passport would pass the EU DPP Registry\'s formal submission gate — returns { ready, findings[] } covering mandatory-field presence, correct formatting, and a resolvable public link. This is the registry\'s mechanical pre-submission check, not the substantive compliance verdict. Battery passports only.',
+				description: 'Check whether a passport would pass the EU DPP Registry\'s formal submission gate — returns { ready, findings[] } covering mandatory-field presence, correct formatting, a resolvable public link, item-level granularity (a serial number), and a well-formed commodity code where the category carries one. This is the registry\'s mechanical pre-submission check, not the substantive compliance verdict. Battery passports only.',
 				routing: {
 					request: {
 						method: 'GET',
