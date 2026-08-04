@@ -7,7 +7,16 @@ import type { INodeProperties } from 'n8n-workflow';
  * textile, electronics, …): they describe WHAT a compliant passport in
  * a category must contain — field count, required-field count, the
  * governing regulation, and (for a single category) every field with
- * its key, label, type, required flag and access level. Reference data:
+ * its key, label, type, required flag and access level.
+ *
+ * `required` is the category-agnostic default. Where a field's
+ * applicability varies by product category the response also carries
+ * `requiredBy` (e.g. battery, keyed by `batteryCategory`:
+ * `{ EV: "required", LMT: "notApplicable", … }`) plus a top-level
+ * `requiredFieldCountByCategory`. Resolve effective required-ness as
+ * `requiredBy[category]` when present, falling back to `required` —
+ * a workflow that reads `required` alone will over-require fields for
+ * some battery types and under-require them for others. Reference data:
  * read-only, global (not company-scoped), API-key auth. Use it to
  * discover requirements BEFORE creating products/passports.
  */
@@ -27,7 +36,7 @@ export const templateOperations: INodeProperties[] = [
 				value: 'get',
 				action: 'Get a category template',
 				description:
-					'Get the full regulatory field schema for one DPP category — every field with its key, label, type, required flag, access level and (where known) the governing regulation article/annex',
+					'Get the full regulatory field schema for one DPP category — every field with its key, label, type, required flag (plus a per-category requiredBy map where applicability varies, as it does for battery), access level and (where known) the governing regulation article/annex',
 				routing: {
 					request: {
 						method: 'GET',
