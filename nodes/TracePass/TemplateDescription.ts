@@ -13,12 +13,24 @@ import type { INodeProperties } from 'n8n-workflow';
  * applicability varies by product category the response also carries
  * `requiredBy` (e.g. battery, keyed by `batteryCategory`:
  * `{ EV: "required", LMT: "notApplicable", … }`) plus a top-level
- * `requiredFieldCountByCategory`. Resolve effective required-ness as
- * `requiredBy[category]` when present, falling back to `required` —
- * a workflow that reads `required` alone will over-require fields for
- * some battery types and under-require them for others. Reference data:
- * read-only, global (not company-scoped), API-key auth. Use it to
- * discover requirements BEFORE creating products/passports.
+ * `requiredFieldCountByCategory`. Resolve effective required-ness as:
+ *
+ *   1. For a battery, check SCOPE first. Only `EV`, `LMT` and
+ *      `industrial_gt_2kwh` owe a battery passport (Art. 77(1) of
+ *      Reg (EU) 2023/1542). For `portable`, `SLI` or
+ *      `industrial_lte_2kwh` NOTHING is required — those batteries
+ *      have no passport obligation at all.
+ *   2. Otherwise `requiredBy[category]` when present,
+ *   3. falling back to `required`.
+ *
+ * Skipping step 1 is not a rounding error: `requiredBy` is keyed only by
+ * the three in-scope categories, so an out-of-scope battery falls through
+ * to `required` and the workflow demands the full mandatory field set for
+ * a product the Regulation exempts. A workflow that reads `required`
+ * alone will likewise over-require fields for some battery types and
+ * under-require them for others. Reference data: read-only, global (not
+ * company-scoped), API-key auth. Use it to discover requirements BEFORE
+ * creating products/passports.
  */
 
 export const templateOperations: INodeProperties[] = [
