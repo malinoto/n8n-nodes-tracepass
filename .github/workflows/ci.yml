@@ -42,8 +42,15 @@ jobs:
           node-version: 20
           cache: npm
 
+      # `--ignore-scripts` skips native postinstall builds. Needed because
+      # `isolated-vm` arrives transitively (n8n-workflow → @n8n/expression-runtime)
+      # and its C++ fails to compile against the V8 headers on current Node 20.x
+      # runners. It is n8n's expression sandbox — irrelevant to linting or building
+      # this node, and this package ships ZERO runtime dependencies, so nothing it
+      # provides can reach a user. Locally the failure is invisible because the
+      # compiled binary is already cached.
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Lint
         run: npm run lint
