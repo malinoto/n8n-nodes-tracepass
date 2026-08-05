@@ -19,6 +19,19 @@ export const productOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Archive',
+				value: 'archive',
+				action: 'Archive a product',
+				description:
+					'Soft-archive a product. Reversible, and NOT deletion. Blocked with 409 while any non-archived passport still references the product \u2014 archive those passports first.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/products/{{$parameter["productId"]}}/archive',
+					},
+				},
+			},
+			{
 				name: 'Create',
 				value: 'create',
 				action: 'Create a product',
@@ -27,6 +40,19 @@ export const productOperations: INodeProperties[] = [
 					request: {
 						method: 'POST',
 						url: '/api/v1/products',
+					},
+				},
+			},
+			{
+				name: 'Create Batch',
+				value: 'createBatch',
+				action: 'Create many products in one call',
+				description:
+					'Create up to 100 products in one call. Partial success per item, so some can be created while others error. The whole batch consumes N writes upfront \u2014 if that would exceed your daily cap NOTHING is created (429). Products are not billable on their own.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '/api/v1/products/batch',
 					},
 				},
 			},
@@ -72,6 +98,23 @@ export const productOperations: INodeProperties[] = [
 ];
 
 export const productFields: INodeProperties[] = [
+	// ---- Create Batch ----------------------------------------------
+	{
+		displayName: 'Products (JSON)',
+		name: 'batchProducts',
+		type: 'json',
+		required: true,
+		default: '=[\n  { "name": "", "model": "", "category": "battery" }\n]',
+		description:
+			'An array of up to 100 products to create. Each item needs name + model + category. Wire this from an upstream node (e.g. a Spreadsheet or HTTP node) by mapping its rows into this shape.',
+		displayOptions: {
+			show: { resource: ['product'], operation: ['createBatch'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'products' },
+		},
+	},
+
 	// ---- Product ID (get / update) ----------------------------------
 	{
 		displayName: 'Product ID',
@@ -82,7 +125,7 @@ export const productFields: INodeProperties[] = [
 		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0',
 		description: 'The TracePass ID of the product',
 		displayOptions: {
-			show: { resource: ['product'], operation: ['get', 'update'] },
+			show: { resource: ['product'], operation: ['archive', 'get', 'update'] },
 		},
 	},
 	// ---- Create fields ---------------------------------------------
