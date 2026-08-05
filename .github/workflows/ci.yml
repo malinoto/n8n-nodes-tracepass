@@ -38,19 +38,25 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          # Matches the `engines.node` floor in package.json (>=20.15).
-          node-version: 20
+          # `lts/*`, matching the publish workflow — NOT this package's own
+          # `engines.node` floor of 20.15.
+          #
+          # The floor describes what a CONSUMER needs to run the published node
+          # (which has zero runtime dependencies). The BUILD needs whatever the dev
+          # dependency tree demands, and that is higher: `isolated-vm` (pulled in
+          # transitively by n8n-workflow → @n8n/expression-runtime) declares
+          # `engines: node >=22` and ships prebuilt binaries only for newer ABIs.
+          # On Node 20 there is no prebuild, so npm compiles it from source against
+          # a V8 it does not match, and the install dies with
+          # "marked 'final', but is not virtual".
+          #
+          # Pinning 20 here is what broke the first CI run. Don't "align" this back
+          # to engines.node — the two numbers answer different questions.
+          node-version: lts/*
           cache: npm
 
-      # `--ignore-scripts` skips native postinstall builds. Needed because
-      # `isolated-vm` arrives transitively (n8n-workflow → @n8n/expression-runtime)
-      # and its C++ fails to compile against the V8 headers on current Node 20.x
-      # runners. It is n8n's expression sandbox — irrelevant to linting or building
-      # this node, and this package ships ZERO runtime dependencies, so nothing it
-      # provides can reach a user. Locally the failure is invisible because the
-      # compiled binary is already cached.
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       - name: Lint
         run: npm run lint
