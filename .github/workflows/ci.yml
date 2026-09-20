@@ -61,5 +61,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # The node is declarative — a wrong URL or a dead operation passes lint
+      # and build without complaint, so these assertions are the only check
+      # that catches them before publish. The cross-repo route comparison
+      # self-skips here (CI clones this repo alone); it runs locally and at
+      # release, where the platform checkout is present.
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
