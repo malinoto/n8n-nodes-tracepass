@@ -46,14 +46,28 @@ green run.
 - The version in `package.json` and `package-lock.json` must match before tagging
   — `npm install --package-lock-only` syncs the lockfile after a manual bump.
 
-## Build & lint
+## Build, lint & test
 
 ```bash
 npm run build      # n8n-node build — compiles TS to dist/, copies icons
 npm run lint       # n8n-node lint — n8n node-spec linter (naming, display rules)
+npm test           # vitest — routing + description integrity
 ```
 
-Both must pass before committing a node change. `npm run build` regenerates
+All three must pass before committing a node change.
+
+**`npm test` is the only thing that can catch a wrong URL.** The node is
+declarative: the URLs are *data*, so a route renamed on the platform passes lint
+and build and fails in a user's workflow after publish. `tests/routing.test.ts`
+compares every routing block's URL shape against the platform's real routes under
+`tracepass-platform/src/app/api/v1`, and also catches a `{{…}}` URL missing its
+leading `=` (the braces would ship literally), an operation option with no routing
+block, and a lost credential auth-gate.
+
+**Run it with `tracepass-platform` checked out as a sibling.** The cross-repo
+comparison self-skips when it isn't there — that keeps CI green (it clones this
+repo alone), but it also means a solo run silently checks less. Before cutting a
+release, run it where the platform is present. `npm run build` regenerates
 `dist/`; the published package serves from `dist/` (see `files` in package.json).
 
 **The n8n linter is the authority on operation `name`/`action`/description wording
