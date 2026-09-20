@@ -58,7 +58,7 @@ All three must pass before committing a node change.
 
 **`npm test` is the only thing that can catch a wrong URL.** The node is
 declarative: the URLs are *data*, so a route renamed on the platform passes lint
-and build and fails in a user's workflow after publish. `tests/routing.test.ts`
+and build and fails in a user's workflow after publish. `tests/routing.test.mjs`
 compares every routing block's URL shape against the platform's real routes under
 `tracepass-platform/src/app/api/v1`, and also catches a `{{…}}` URL missing its
 leading `=` (the braces would ship literally), an operation option with no routing
@@ -67,7 +67,23 @@ block, and a lost credential auth-gate.
 **Run it with `tracepass-platform` checked out as a sibling.** The cross-repo
 comparison self-skips when it isn't there — that keeps CI green (it clones this
 repo alone), but it also means a solo run silently checks less. Before cutting a
-release, run it where the platform is present. `npm run build` regenerates
+release, run it where the platform is present.
+
+**The test is `.mjs`, not `.ts`, and must stay that way.** The n8n linter enforces
+the community-node "no dependencies" rule via
+`@n8n/community-nodes/no-restricted-imports`, scoped to **`**/*.ts`** — every
+TypeScript file in the repo, not just `nodes/` and `credentials/`. A `.ts` test
+importing `vitest` and `node:fs` fails CI with four errors and is reported as an
+*n8n Cloud compatibility issue*, i.e. it threatens the verification badge. `.mjs`
+sits outside that glob; vitest still resolves the node's `.ts` source from it.
+
+Two dead ends, so nobody re-walks them: **`npx n8n-node cloud-support disable`**
+(the CLI's own suggestion on failure) switches the package to
+`configWithoutCloudSupport` and drops strict mode for the node source too —
+trading verification for a test-file lint error. And **editing
+`eslint.config.mjs`** to ignore `tests/` is rejected outright: strict mode
+requires that file be byte-identical to the default re-export
+(`Strict mode violation: eslint.config.mjs has been modified`). `npm run build` regenerates
 `dist/`; the published package serves from `dist/` (see `files` in package.json).
 
 **The n8n linter is the authority on operation `name`/`action`/description wording
