@@ -61,7 +61,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Create',
 				value: 'create',
 				action: 'Create a passport',
-				description: 'Create a new Digital Product Passport. Consumes a plan DPP slot.',
+				description:
+					'Create a new Digital Product Passport. Consumes a plan DPP slot. Supports GS1 (GTIN + serial, default) and EN 18219 identifier schemes (ISO 15459, IEC 61406, DID, DOI). Battery passports accept only GS1 or ISO 15459 (Battery Regulation Art. 77(3)).',
 				routing: {
 					request: {
 						method: 'POST',
@@ -74,7 +75,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'createBatch',
 				action: 'Create many passports in one call',
 				description:
-					'Create up to 100 passport SHELLS in one call (productId + GTIN + serial each). Field values are NOT set here — populate them afterwards with Update Field or AI extraction. Partial success per item; consumes one plan DPP slot per passport.',
+					'Create up to 100 passport SHELLS in one call. Each item needs productId and an identifier — use gs1.gtin + gs1.serialNumber for GS1, or identifier.{scheme,...} for EN 18219 schemes (iso15459, iec61406, did, doi). Battery passports accept only gs1 or iso15459 (Art. 77(3)). Field values are not accepted here — set them with Update Field. Partial success per item; consumes one plan DPP slot per passport.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -327,6 +328,58 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'body', property: 'productId' },
 		},
 	},
+	// Identifier scheme selector — controls which sub-fields are shown.
+	// Each non-GS1 option sends identifier.scheme via option-level routing;
+	// GS1 uses the legacy gs1.gtin + gs1.serialNumber path (backward compatible).
+	{
+		displayName: 'Identifier Scheme',
+		name: 'identifierScheme',
+		type: 'options',
+		noDataExpression: true,
+		default: 'gs1',
+		description:
+			'EN 18219 product identifier scheme. Battery passports accept only GS1 or ISO 15459 (Battery Regulation Art. 77(3)).',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'] },
+		},
+		options: [
+			{
+				name: 'DID (W3C Decentralised Identifier)',
+				value: 'did',
+				routing: {
+					send: { type: 'body', property: 'identifier.scheme', value: 'did' },
+				},
+			},
+			{
+				name: 'DOI (ISO 26324)',
+				value: 'doi',
+				routing: {
+					send: { type: 'body', property: 'identifier.scheme', value: 'doi' },
+				},
+			},
+			{
+				name: 'GS1 (GTIN + Serial)',
+				value: 'gs1',
+				// GS1 uses the legacy gs1.gtin / gs1.serialNumber fields below;
+				// no identifier.scheme is sent on this path.
+			},
+			{
+				name: 'IEC 61406 (Identification Link)',
+				value: 'iec61406',
+				routing: {
+					send: { type: 'body', property: 'identifier.scheme', value: 'iec61406' },
+				},
+			},
+			{
+				name: 'ISO 15459',
+				value: 'iso15459',
+				routing: {
+					send: { type: 'body', property: 'identifier.scheme', value: 'iso15459' },
+				},
+			},
+		],
+	},
+	// ---- GS1 sub-fields (default, backward compatible) ----------------
 	{
 		displayName: 'GTIN',
 		name: 'gtin',
@@ -336,7 +389,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. 04012345678901',
 		description: 'The GS1 GTIN: 14 digits, or a 13-digit EAN (padded to 14 with a leading 0). Stored and returned as GTIN-14.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['create'] },
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['gs1'] },
 		},
 		routing: {
 			send: { type: 'body', property: 'gs1.gtin' },
@@ -351,12 +404,136 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. SN-2026-00042',
 		description: 'A unique serial number for this product unit',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['create'] },
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['gs1'] },
 		},
 		routing: {
 			send: { type: 'body', property: 'gs1.serialNumber' },
 		},
 	},
+	// ---- ISO 15459 sub-fields ------------------------------------------
+	{
+		displayName: 'Issuing Agency Code',
+		name: 'iso15459Iac',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. MFR',
+		description: 'ISO/IEC 15459 issuing agency code (1–3 characters, assigned by ISO/IEC 15459-2)',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iso15459'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.issuingAgencyCode' },
+		},
+	},
+	{
+		displayName: 'Primary ID',
+		name: 'iso15459PrimaryId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 1234567890',
+		description: 'The primary identifier assigned by the issuing agency',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iso15459'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.primaryId' },
+		},
+	},
+	{
+		displayName: 'Serial (Optional)',
+		name: 'iso15459Serial',
+		type: 'string',
+		default: '',
+		placeholder: 'e.g. SN-001',
+		description: 'Optional serial component appended after the primary ID',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iso15459'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.serial' },
+		},
+	},
+	{
+		displayName: 'Raw Identifier',
+		name: 'iso15459Raw',
+		type: 'string',
+		required: true,
+		default: '={{ $parameter["iso15459Iac"] + $parameter["iso15459PrimaryId"] + ($parameter["iso15459Serial"] || "") }}',
+		description:
+			'Concatenated raw identifier (IAC + primary ID + serial). Automatically computed from the fields above; override only if the concatenation rule differs.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iso15459'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.raw' },
+		},
+	},
+	// ---- IEC 61406 sub-fields ------------------------------------------
+	{
+		displayName: 'Identification Link URI',
+		name: 'iec61406Uri',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. https://product.example.com/item/42',
+		description: 'IEC 61406 Identification Link — must be an https URI. Not valid for battery passports.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iec61406'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.uri' },
+		},
+	},
+	// ---- DID sub-fields ------------------------------------------------
+	{
+		displayName: 'DID',
+		name: 'didValue',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. did:example:123abc',
+		description: 'W3C Decentralised Identifier string. Not valid for battery passports.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['did'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.did' },
+		},
+	},
+	{
+		displayName: 'DID Method',
+		name: 'didMethod',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. example',
+		description: 'The DID method (the part after "did:" and before the second colon)',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['did'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.method' },
+		},
+	},
+	// ---- DOI sub-fields ------------------------------------------------
+	{
+		displayName: 'DOI',
+		name: 'doiValue',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 10.1234/example.product',
+		description: 'ISO 26324 Digital Object Identifier in bare form: 10.{registrant}/{suffix} (omit the https://doi.org/ prefix). Not valid for battery passports.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['doi'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'identifier.doi' },
+		},
+	},
+	// ---- Overage (applies to all create schemes) -----------------------
 	{
 		displayName: 'Confirm Overage Charge',
 		name: 'confirmOverage',
@@ -379,7 +556,7 @@ export const passportFields: INodeProperties[] = [
 		required: true,
 		default: '=[\n  { "productId": "", "gs1": { "gtin": "", "serialNumber": "" } }\n]',
 		description:
-			'An array of up to 100 passports to create. Each item needs productId + gs1.gtin + gs1.serialNumber. Wire this from an upstream node (e.g. a Spreadsheet/HTTP node) by mapping its rows into this shape. Field values are not accepted here — create the shells, then set fields with Update Field.',
+			'An array of up to 100 passports to create. Each item needs productId and an identifier. GS1 (default): { "productId": "...", "gs1": { "gtin": "...", "serialNumber": "..." } }. EN 18219 schemes: { "productId": "...", "identifier": { "scheme": "iso15459|iec61406|did|doi", ...scheme-specific fields } }. Battery passports accept only gs1 or iso15459 identifiers. Field values are not accepted here — create the shells, then set fields with Update Field.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['createBatch'] },
 		},
