@@ -334,7 +334,7 @@ export const passportFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		placeholder: 'e.g. 04012345678901',
-		description: 'The 14-digit GS1 GTIN',
+		description: 'The GS1 GTIN: 14 digits, or a 13-digit EAN (padded to 14 with a leading 0). Stored and returned as GTIN-14.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'] },
 		},
