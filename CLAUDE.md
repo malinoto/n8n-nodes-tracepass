@@ -25,7 +25,8 @@ just tag the release commit and push the tag:
 ```bash
 # package.json version is already at the target, e.g. 1.0.4
 git push origin master                 # land the code + version bump first
-git tag v1.0.4                         # tag MUST be v-prefixed — the workflow filter is 'v*.*.*'
+git tag -a v1.0.4 -m "v1.0.4 — <what>"   # v-prefixed (workflow filter 'v*.*.*'); ANNOTATED — this
+                                         # repo's git config refuses a lightweight tag ("no tag message?")
 git push origin v1.0.4                 # this push triggers publish.yml → npm
 ```
 
