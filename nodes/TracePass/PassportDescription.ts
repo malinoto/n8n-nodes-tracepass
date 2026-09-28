@@ -518,6 +518,28 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'body', property: 'identifier.doi' },
 		},
 	},
+	// ---- DOI granularity (EN 18219 §5.6.2(b)) --------------------------
+	// A DOI product identifier must declare whether it identifies the product
+	// model, a production batch, or an individual item.
+	{
+		displayName: 'DOI Granularity',
+		name: 'doiGranularity',
+		type: 'options',
+		required: true,
+		default: 'model',
+		description: 'Whether the DOI identifies the product model, a production batch, or an individual item (EN 18219 §5.6.2(b)). Required for DOI identifiers.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['doi'] },
+		},
+		options: [
+			{ name: 'Batch', value: 'batch' },
+			{ name: 'Item', value: 'item' },
+			{ name: 'Model', value: 'model' },
+		],
+		routing: {
+			send: { type: 'body', property: 'identifier.granularity' },
+		},
+	},
 	// ---- Overage (applies to all create schemes) -----------------------
 	{
 		displayName: 'Confirm Overage Charge',
