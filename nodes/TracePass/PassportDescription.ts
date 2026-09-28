@@ -144,6 +144,31 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Snapshot',
+				value: 'getSnapshot',
+				action: 'Get a passport snapshot',
+				description:
+					'Return the full archival record of one immutability snapshot — the complete JSON-LD the passport asserted at that time, plus contentHash and hashValid (re-verified on read). Counts as one passport read against the daily cap.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/snapshots/{{$parameter["snapshotId"]}}',
+					},
+				},
+			},
+			{
+				name: 'Get Snapshots',
+				value: 'getSnapshots',
+				action: 'Get passport snapshots',
+				description: 'Return a paginated list of immutability snapshots for a passport, newest first. Each entry carries ID, version, reason (published|republished|manual), snapshotAt, contentHash, hashValid (re-verified on read), restorable flag, and field count. Passports published before the snapshot feature existed return an empty list. Counts as one passport read against the daily cap.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/snapshots',
+					},
+				},
+			},
+			{
 				name: 'Registry Readiness',
 				value: 'registryReadiness',
 				action: 'Check passport registry readiness',
@@ -223,8 +248,52 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'registryReadiness', 'updateField', 'suspend', 'archive', 'getQr'],
+				operation: ['get', 'compliance', 'registryReadiness', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots'],
 			},
+		},
+	},
+	// ---- Snapshot ID (getSnapshot) ---------------------------------
+	{
+		displayName: 'Snapshot ID',
+		name: 'snapshotId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d1',
+		description: 'The ID of the specific snapshot to retrieve',
+		displayOptions: {
+			show: {
+				resource: ['passport'],
+				operation: ['getSnapshot'],
+			},
+		},
+	},
+	// ---- Snapshot pagination (getSnapshots) -------------------------
+	{
+		displayName: 'Page',
+		name: 'snapshotPage',
+		type: 'number',
+		default: 1,
+		description: 'Page number (1-based)',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getSnapshots'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'page' },
+		},
+	},
+	{
+		displayName: 'Page Size',
+		name: 'snapshotLimit',
+		type: 'number',
+		default: 20,
+		typeOptions: { minValue: 1, maxValue: 100 },
+		description: 'Number of snapshots per page (max 100)',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getSnapshots'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'limit' },
 		},
 	},
 	// ---- Serial number (get by serial) -----------------------------
