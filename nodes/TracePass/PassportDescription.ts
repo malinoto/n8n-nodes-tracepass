@@ -455,21 +455,6 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'body', property: 'identifier.serial' },
 		},
 	},
-	{
-		displayName: 'Raw Identifier',
-		name: 'iso15459Raw',
-		type: 'string',
-		required: true,
-		default: '={{ $parameter["iso15459Iac"] + $parameter["iso15459PrimaryId"] + ($parameter["iso15459Serial"] || "") }}',
-		description:
-			'Concatenated raw identifier (IAC + primary ID + serial). Automatically computed from the fields above; override only if the concatenation rule differs.',
-		displayOptions: {
-			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iso15459'] },
-		},
-		routing: {
-			send: { type: 'body', property: 'identifier.raw' },
-		},
-	},
 	// ---- IEC 61406 sub-fields ------------------------------------------
 	{
 		displayName: 'Identification Link URI',
