@@ -366,7 +366,8 @@ describe('TracePass passport — Data Matrix and point-in-time snapshots', () =>
 		expect(sym, 'symbology option missing').toBeTruthy();
 		expect(sym.routing.send).toEqual({ type: 'query', property: 'symbology' });
 		expect(sym.options.map((o) => o.value).sort()).toEqual(['datamatrix', 'qr']);
-		expect(platformRoute('passports', '[id]', 'qr')).toContain('"symbology"');
+		// The platform checkout is a sibling locally, absent in CI (same rule as above).
+		if (existsSync(PLATFORM_V1)) expect(platformRoute('passports', '[id]', 'qr')).toContain('"symbology"');
 	});
 
 	it('Get Snapshots sends `at` from "As Of", and the platform snapshots route reads it', () => {
@@ -375,6 +376,6 @@ describe('TracePass passport — Data Matrix and point-in-time snapshots', () =>
 		expect(f.displayOptions.show.operation).toEqual(['getSnapshots']);
 		expect(f.routing.send.type).toBe('query');
 		expect(f.routing.send.property).toBe('at');
-		expect(platformRoute('passports', '[id]', 'snapshots')).toContain('searchParams.get("at")');
+		if (existsSync(PLATFORM_V1)) expect(platformRoute('passports', '[id]', 'snapshots')).toContain('searchParams.get("at")');
 	});
 });
