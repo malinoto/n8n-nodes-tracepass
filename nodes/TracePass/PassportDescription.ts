@@ -186,7 +186,7 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Get Snapshots',
 				value: 'getSnapshots',
 				action: 'Get passport snapshots',
-				description: 'Return a paginated list of immutability snapshots for a passport, newest first. Each entry carries ID, version, reason (published|republished|manual), snapshotAt, contentHash, hashValid (re-verified on read), restorable flag, and field count. Passports published before the snapshot feature existed return an empty list. Counts as one passport read against the daily cap.',
+				description: 'Return a paginated list of snapshots for a passport, newest first. A snapshot is written on publish and after every change to a non-draft passport; each entry carries ID, version, reason (e.g. published, field_edit, status_change, baseline), actor, snapshotAt, contentHash, hashValid (re-verified on read), restorable flag, and field count. Set "As Of" to get the version valid at a given moment instead. Counts as one passport read against the daily cap.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -348,6 +348,20 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'query', property: 'limit' },
 		},
 	},
+	{
+		displayName: 'As Of',
+		name: 'snapshotAt',
+		type: 'dateTime',
+		default: '',
+		description:
+			'Optional. Return the single snapshot valid at this moment (the full record plus validFrom and validUntil) instead of the list. Returns 404 when the moment predates the passport\'s first snapshot.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getSnapshots'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'at', value: '={{ $value || undefined }}' },
+		},
+	},
 	// ---- Serial number (get by serial) -----------------------------
 	{
 		displayName: 'Serial Number',
@@ -430,6 +444,19 @@ export const passportFields: INodeProperties[] = [
 				placeholder: 'e.g. FFFFFF',
 				description: 'Solid backing colour as a 6- or 8-char hex without "#" (8 chars = RGBA)',
 				routing: { send: { type: 'query', property: 'backgroundColor' } },
+			},
+			{
+				displayName: 'Symbology',
+				name: 'symbology',
+				type: 'options',
+				default: 'qr',
+				description:
+					'The 2D code to render. EN 18220 permits QR Code and Data Matrix (ISO/IEC 16022); both encode the same passport URL. Data Matrix suits small parts and direct part marking.',
+				options: [
+					{ name: 'Data Matrix', value: 'datamatrix' },
+					{ name: 'QR Code', value: 'qr' },
+				],
+				routing: { send: { type: 'query', property: 'symbology' } },
 			},
 		],
 	},

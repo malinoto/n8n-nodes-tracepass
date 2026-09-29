@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -353,5 +353,28 @@ describe('TracePass passport — condition flags operations', () => {
 		const f = props.find((p) => p.name === 'conditionFlagsBody');
 		expect(f, 'conditionFlagsBody field missing').toBeTruthy();
 		expect(f.routing?.send?.type).toBe('body');
+	});
+});
+
+describe('TracePass passport — Data Matrix and point-in-time snapshots', () => {
+	const props = new TracePass().description.properties;
+	const platformRoute = (...segs) => readFileSync(join(PLATFORM_V1, ...segs, 'route.ts'), 'utf8');
+
+	it('QR options send symbology (qr | datamatrix), and the platform QR route reads it', () => {
+		const opts = props.find((p) => p.name === 'qrOptions');
+		const sym = opts.options.find((o) => o.name === 'symbology');
+		expect(sym, 'symbology option missing').toBeTruthy();
+		expect(sym.routing.send).toEqual({ type: 'query', property: 'symbology' });
+		expect(sym.options.map((o) => o.value).sort()).toEqual(['datamatrix', 'qr']);
+		expect(platformRoute('passports', '[id]', 'qr')).toContain('"symbology"');
+	});
+
+	it('Get Snapshots sends `at` from "As Of", and the platform snapshots route reads it', () => {
+		const f = props.find((p) => p.name === 'snapshotAt');
+		expect(f, 'snapshotAt field missing').toBeTruthy();
+		expect(f.displayOptions.show.operation).toEqual(['getSnapshots']);
+		expect(f.routing.send.type).toBe('query');
+		expect(f.routing.send.property).toBe('at');
+		expect(platformRoute('passports', '[id]', 'snapshots')).toContain('searchParams.get("at")');
 	});
 });
