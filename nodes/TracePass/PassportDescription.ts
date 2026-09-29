@@ -108,6 +108,32 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Condition Flags',
+				value: 'getConditionFlags',
+				action: 'Get condition flags for a passport',
+				description:
+					'Read the condition-classification flags for a passport — approved yes/no facts (e.g. battery: hasBMS, rechargeable, externalStorageOnly, isStationaryBess) that gate conditional legal duties. An approved flag whose gate applies makes associated fields required.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/condition-flags',
+					},
+				},
+			},
+			{
+				name: 'Get Condition Flags by Serial',
+				value: 'getConditionFlagsBySerial',
+				action: 'Get condition flags for a passport by serial',
+				description:
+					'Read the condition-classification flags for a passport addressed by its serial number. If the serial is not unique in your account the API returns 409 — set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags',
+					},
+				},
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				action: 'Get many passports',
@@ -181,6 +207,32 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Set Condition Flags',
+				value: 'setConditionFlags',
+				action: 'Set condition flags for a passport',
+				description:
+					'Set or clear condition-classification flags for a passport. Each flag is a boolean (true/false) or null to clear. WARNING: approving a flag may make additional fields required — an empty required field will block publishing with a conditional_missing error.',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/condition-flags',
+					},
+				},
+			},
+			{
+				name: 'Set Condition Flags by Serial',
+				value: 'setConditionFlagsBySerial',
+				action: 'Set condition flags for a passport by serial',
+				description:
+					'Set or clear condition-classification flags for a passport addressed by its serial number. Each flag is a boolean (true/false) or null to clear. If the serial is not unique in your account the API returns 409 — set the GTIN field to disambiguate. WARNING: approving a flag may make additional fields required.',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags',
+					},
+				},
+			},
+			{
 				name: 'Suspend',
 				value: 'suspend',
 				action: 'Suspend a passport',
@@ -248,7 +300,7 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'registryReadiness', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots'],
+				operation: ['get', 'compliance', 'registryReadiness', 'getConditionFlags', 'setConditionFlags', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots'],
 			},
 		},
 	},
@@ -306,7 +358,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. SN-2026-00042',
 		description: 'The product unit serial number',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
 		},
 	},
 	{
@@ -318,7 +370,7 @@ export const passportFields: INodeProperties[] = [
 		description:
 			'Optional. A serial is unique only within a GTIN, so if the same serial exists under two GTINs in your account a serial-only call returns 409. Set the GTIN here to resolve the passport exactly.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
 		},
 		routing: {
 			send: { type: 'query', property: 'gtin' },
@@ -679,6 +731,24 @@ export const passportFields: INodeProperties[] = [
 		},
 		routing: {
 			send: { type: 'body', property: 'value' },
+		},
+	},
+	// ---- Condition flags body (setConditionFlags / setConditionFlagsBySerial) ------
+	{
+		displayName: 'Flags (JSON)',
+		name: 'conditionFlagsBody',
+		type: 'json',
+		required: true,
+		default: '={ "hasBMS": true }',
+		description:
+			'A JSON object mapping flag keys to true, false, or null. true = flag is set; false = flag is explicitly cleared; null = remove the flag entry. Example: { "hasBMS": true, "rechargeable": false, "externalStorageOnly": null }. Flag keys are category-specific — see the passport category template for valid keys.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['setConditionFlags', 'setConditionFlagsBySerial'] },
+		},
+		routing: {
+			// No `property` → n8n spread-merges the parsed JSON into the root request body,
+			// which is the correct shape for PATCH /condition-flags (Record<flagKey, boolean|null>).
+			send: { type: 'body' },
 		},
 	},
 	// ---- Get Many filters ------------------------------------------

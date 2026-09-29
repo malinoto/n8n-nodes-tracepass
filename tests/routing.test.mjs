@@ -19,7 +19,11 @@ import { TracePass } from '../nodes/TracePass/TracePass.node';
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const PLATFORM_V1 = join(HERE, '..', '..', 'tracepass-platform', 'src', 'app', 'api', 'v1');
+// Allow overriding the platform path via env (e.g. when using a worktree that has
+// routes not yet merged to the main checkout): TRACEPASS_PLATFORM_PATH=/path/to/wt npm test
+const PLATFORM_V1 = process.env.TRACEPASS_PLATFORM_PATH
+	? join(process.env.TRACEPASS_PLATFORM_PATH, 'src', 'app', 'api', 'v1')
+	: join(HERE, '..', '..', 'tracepass-platform', 'src', 'app', 'api', 'v1');
 
 /** Every `routing` block reachable from the node's properties. */
 function collectRoutes() {
@@ -286,4 +290,68 @@ describe('TracePass passport Create — EN 18219 identifier schemes', () => {
 		});
 	}
 
+});
+
+describe('TracePass passport — condition flags operations', () => {
+	const props = new TracePass().description.properties;
+	const routes = collectRoutes();
+
+	it('getConditionFlags routes to the correct GET endpoint', () => {
+		const r = routes.find((r) => r.owner === 'operation:getConditionFlags');
+		expect(r, 'getConditionFlags route missing').toBeTruthy();
+		expect(r.method).toBe('GET');
+		expect(r.url).toBe('=/api/v1/passports/{{$parameter["passportId"]}}/condition-flags');
+	});
+
+	it('getConditionFlagsBySerial routes to the correct GET by-serial endpoint', () => {
+		const r = routes.find((r) => r.owner === 'operation:getConditionFlagsBySerial');
+		expect(r, 'getConditionFlagsBySerial route missing').toBeTruthy();
+		expect(r.method).toBe('GET');
+		expect(r.url).toBe('=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags');
+	});
+
+	it('setConditionFlags routes to the correct PATCH endpoint', () => {
+		const r = routes.find((r) => r.owner === 'operation:setConditionFlags');
+		expect(r, 'setConditionFlags route missing').toBeTruthy();
+		expect(r.method).toBe('PATCH');
+		expect(r.url).toBe('=/api/v1/passports/{{$parameter["passportId"]}}/condition-flags');
+	});
+
+	it('setConditionFlagsBySerial routes to the correct PATCH by-serial endpoint', () => {
+		const r = routes.find((r) => r.owner === 'operation:setConditionFlagsBySerial');
+		expect(r, 'setConditionFlagsBySerial route missing').toBeTruthy();
+		expect(r.method).toBe('PATCH');
+		expect(r.url).toBe('=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags');
+	});
+
+	it('passportId field is shown for getConditionFlags and setConditionFlags', () => {
+		const f = props.find((p) => p.name === 'passportId');
+		expect(f, 'passportId field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getConditionFlags');
+		expect(f.displayOptions?.show?.operation).toContain('setConditionFlags');
+	});
+
+	it('serialNumber field is shown for getConditionFlagsBySerial and setConditionFlagsBySerial', () => {
+		const f = props.find(
+			(p) => p.name === 'serialNumber' && p.displayOptions?.show?.operation?.includes?.('getBySerial'),
+		);
+		expect(f, 'serialNumber field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getConditionFlagsBySerial');
+		expect(f.displayOptions?.show?.operation).toContain('setConditionFlagsBySerial');
+	});
+
+	it('conditionFlagsBody field is shown for set operations only', () => {
+		const f = props.find((p) => p.name === 'conditionFlagsBody');
+		expect(f, 'conditionFlagsBody field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('setConditionFlags');
+		expect(f.displayOptions?.show?.operation).toContain('setConditionFlagsBySerial');
+		expect(f.displayOptions?.show?.operation).not.toContain('getConditionFlags');
+		expect(f.displayOptions?.show?.operation).not.toContain('getConditionFlagsBySerial');
+	});
+
+	it('conditionFlagsBody sends to the request body', () => {
+		const f = props.find((p) => p.name === 'conditionFlagsBody');
+		expect(f, 'conditionFlagsBody field missing').toBeTruthy();
+		expect(f.routing?.send?.type).toBe('body');
+	});
 });

@@ -55,6 +55,15 @@ In n8n: **Settings → Community Nodes → Install**, then enter
   Registry's formal submission gate (mandatory fields present, correct
   formatting, a resolvable public link). The registry's mechanical
   pre-submission check, not the substantive compliance verdict. Battery only
+- **Get Condition Flags** / **Get Condition Flags by Serial** — read the
+  condition-classification flags for a passport — approved yes/no facts
+  (e.g. battery: `hasBMS`, `rechargeable`, `externalStorageOnly`,
+  `isStationaryBess`) that gate conditional legal duties
+- **Set Condition Flags** / **Set Condition Flags by Serial** — set or
+  clear condition flags (flag → `true` / `false` / `null` to remove).
+  **Warning:** approving a flag may make additional fields required — an
+  empty required field will block publishing with a `conditional_missing`
+  error
 - **Update Field** / **Update Field by Serial** — set the value of one
   passport field, by ID or by serial
 - **Suspend** / **Suspend by Serial** — suspend a published passport
