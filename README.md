@@ -43,6 +43,13 @@ In n8n: **Settings → Community Nodes → Install**, then enter
   Charge*). For a repurposed, remanufactured or reused battery, add
   *Lineage (JSON)* under *Additional Options* to link the new passport
   to the original(s) (Battery Regulation Art. 77(7))
+- **Capture Measurements** / **Capture Measurements by Serial** — push
+  over-life battery data from your own equipment (state of health, cycle
+  counts and the other Battery Regulation Annex XIII point 4 values) into a
+  published battery passport; metered against the plan's monthly measurement
+  allowance, and paid plans keep counting past it at no charge
+- **Get Measurements** / **Get Latest Measurements** — read a battery
+  passport's measurement history, or the newest value per field
 - **Get** / **Get by Serial** — retrieve a passport by ID or by its
   serial number
 - **Get Many** — list passports, with status / product filters

@@ -398,3 +398,29 @@ describe('TracePass passport Create — battery lineage (Art. 77(7))', () => {
 		expect(l.routing?.send).toEqual({ type: 'body', property: 'lineage' });
 	});
 });
+
+describe('TracePass passport — battery measurements (living record)', () => {
+	const props = new TracePass().description.properties;
+	const ops = props.find((p) => p.name === 'operation' && p.displayOptions?.show?.resource?.includes('passport')).options;
+	const byValue = (v) => ops.find((o) => o.value === v);
+
+	it('routes capture, history and latest to the measurements endpoints', () => {
+		expect(byValue('captureMeasurements').routing.request).toMatchObject({ method: 'POST', url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements' });
+		expect(byValue('captureMeasurementsBySerial').routing.request.url).toContain('/by-serial/');
+		expect(byValue('getMeasurements').routing.request).toMatchObject({ method: 'GET' });
+		expect(byValue('getLatestMeasurements').routing.request.url).toMatch(/\/measurements\/latest$/);
+	});
+
+	it('sends the measurements array as the body property', () => {
+		const body = props.find((p) => p.name === 'measurementsBody');
+		expect(body.routing.send).toEqual({ type: 'body', property: 'measurements' });
+		expect(body.displayOptions.show.operation).toEqual(['captureMeasurements', 'captureMeasurementsBySerial']);
+	});
+
+	it('shows the passport id / serial inputs the new operations need', () => {
+		const id = props.find((p) => p.name === 'passportId');
+		for (const op of ['captureMeasurements', 'getLatestMeasurements', 'getMeasurements']) expect(id.displayOptions.show.operation).toContain(op);
+		const serial = props.find((p) => p.name === 'serialNumber');
+		expect(serial.displayOptions.show.operation).toContain('captureMeasurementsBySerial');
+	});
+});

@@ -45,6 +45,32 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Capture Measurements',
+				value: 'captureMeasurements',
+				action: 'Capture battery measurements for a passport',
+				description:
+					'Push over-life measurements from your own equipment into a published battery passport (e.g. state of health, cycle counts; Battery Regulation Annex XIII point 4). The newest per field becomes the current value. Metered against the plan\'s monthly measurement allowance; paid plans keep counting past it at no charge.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements',
+					},
+				},
+			},
+			{
+				name: 'Capture Measurements by Serial',
+				value: 'captureMeasurementsBySerial',
+				action: 'Capture battery measurements for a passport by serial',
+				description:
+					'Same as Capture Measurements, addressed by the passport serial number. Set the GTIN field if the serial is not unique in your account.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/measurements',
+					},
+				},
+			},
+			{
 				name: 'Compliance',
 				value: 'compliance',
 				action: 'Check passport compliance',
@@ -134,6 +160,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Latest Measurements',
+				value: 'getLatestMeasurements',
+				action: 'Get the latest battery measurements for a passport',
+				description:
+					'Read the newest measurement for each accepted battery measurement field (null where none has been received yet)',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements/latest',
+					},
+				},
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				action: 'Get many passports',
@@ -142,6 +181,19 @@ export const passportOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '/api/v1/passports',
+					},
+				},
+			},
+			{
+				name: 'Get Measurements',
+				value: 'getMeasurements',
+				action: 'Get battery measurement history for a passport',
+				description:
+					'Read the measurement history of a battery passport, newest first, optionally filtered by field and time window',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements',
 					},
 				},
 			},
@@ -300,7 +352,7 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'registryReadiness', 'getConditionFlags', 'setConditionFlags', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots'],
+				operation: ['get', 'compliance', 'registryReadiness', 'getConditionFlags', 'setConditionFlags', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots', 'captureMeasurements', 'getLatestMeasurements', 'getMeasurements'],
 			},
 		},
 	},
@@ -372,7 +424,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. SN-2026-00042',
 		description: 'The product unit serial number',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial', 'captureMeasurementsBySerial'] },
 		},
 	},
 	{
@@ -384,7 +436,7 @@ export const passportFields: INodeProperties[] = [
 		description:
 			'Optional. A serial is unique only within a GTIN, so if the same serial exists under two GTINs in your account a serial-only call returns 409. Set the GTIN here to resolve the passport exactly.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial'] },
+			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial', 'captureMeasurementsBySerial'] },
 		},
 		routing: {
 			send: { type: 'query', property: 'gtin' },
@@ -800,6 +852,76 @@ export const passportFields: INodeProperties[] = [
 			// which is the correct shape for PATCH /condition-flags (Record<flagKey, boolean|null>).
 			send: { type: 'body' },
 		},
+	},
+	// ---- Battery measurements (living record) ------------------------
+	{
+		displayName: 'Measurements (JSON)',
+		name: 'measurementsBody',
+		type: 'json',
+		required: true,
+		default: '=[\n  { "fieldKey": "stateOfHealth", "value": 96.4, "measuredAt": "2027-03-01T06:00:00Z", "externalId": "bms-7781-2027-03-01" }\n]',
+		description:
+			'An array of up to 500 measurements: { fieldKey, value, measuredAt (ISO 8601), externalId?, unit? }. fieldKey is a battery use-data field (Annex XIII point 4), e.g. stateOfHealth or numberOfFullEquivalentChargingCycles. batteryStatus is not a measurement. externalId makes a measurement idempotent.',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['captureMeasurements', 'captureMeasurementsBySerial'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'measurements' },
+		},
+	},
+	{
+		displayName: 'Filters',
+		name: 'measurementFilters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['getMeasurements'] },
+		},
+		options: [
+			{
+				displayName: 'Cursor',
+				name: 'cursor',
+				type: 'string',
+				default: '',
+				description: 'The nextCursor value from the previous page',
+				routing: { send: { type: 'query', property: 'cursor' } },
+			},
+			{
+				displayName: 'Field Key',
+				name: 'fieldKey',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g. stateOfHealth',
+				description: 'Only measurements of this field',
+				routing: { send: { type: 'query', property: 'fieldKey' } },
+			},
+			{
+				displayName: 'From',
+				name: 'from',
+				type: 'dateTime',
+				default: '',
+				description: 'Only measurements taken at or after this time',
+				routing: { send: { type: 'query', property: 'from' } },
+			},
+			{
+				displayName: 'Limit',
+				name: 'limit',
+				type: 'number',
+				typeOptions: { minValue: 1, maxValue: 200 },
+				default: 50,
+				description: 'Max number of results to return',
+				routing: { send: { type: 'query', property: 'limit' } },
+			},
+			{
+				displayName: 'To',
+				name: 'to',
+				type: 'dateTime',
+				default: '',
+				description: 'Only measurements taken at or before this time',
+				routing: { send: { type: 'query', property: 'to' } },
+			},
+		],
 	},
 	// ---- Get Many filters ------------------------------------------
 	{
