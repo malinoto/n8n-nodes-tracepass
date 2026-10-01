@@ -379,3 +379,22 @@ describe('TracePass passport — Data Matrix and point-in-time snapshots', () =>
 		if (existsSync(PLATFORM_V1)) expect(platformRoute('passports', '[id]', 'snapshots')).toContain('searchParams.get("at")');
 	});
 });
+
+describe('TracePass passport Create — battery lineage (Art. 77(7))', () => {
+	const props = new TracePass().description.properties;
+	const opts = props.find((p) => p.name === 'createOptions');
+
+	it('is an optional collection on Create only, so nothing is sent unless added', () => {
+		expect(opts, 'createOptions collection missing').toBeTruthy();
+		expect(opts.type).toBe('collection');
+		expect(opts.default).toEqual({});
+		expect(opts.displayOptions?.show?.operation).toEqual(['create']);
+	});
+
+	it('Lineage (JSON) sends the body property lineage', () => {
+		const l = (opts?.options ?? []).find((o) => o.name === 'lineage');
+		expect(l, 'lineage option missing').toBeTruthy();
+		expect(l.type).toBe('json');
+		expect(l.routing?.send).toEqual({ type: 'body', property: 'lineage' });
+	});
+});

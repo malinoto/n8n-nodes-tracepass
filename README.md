@@ -40,7 +40,9 @@ In n8n: **Settings → Community Nodes → Install**, then enter
 
 - **Create** — create a Digital Product Passport (consumes a plan
   DPP slot — billable; opt in to overage with *Confirm Overage
-  Charge*)
+  Charge*). For a repurposed, remanufactured or reused battery, add
+  *Lineage (JSON)* under *Additional Options* to link the new passport
+  to the original(s) (Battery Regulation Art. 77(7))
 - **Get** / **Get by Serial** — retrieve a passport by ID or by its
   serial number
 - **Get Many** — list passports, with status / product filters

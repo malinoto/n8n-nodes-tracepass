@@ -703,6 +703,29 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'body', property: 'confirmOverage' },
 		},
 	},
+	// ---- Second-life battery lineage (Art. 77(7)) -------------------
+	// In a collection so nothing is sent unless the user adds it.
+	{
+		displayName: 'Additional Options',
+		name: 'createOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['create'] },
+		},
+		options: [
+			{
+				displayName: 'Lineage (JSON)',
+				name: 'lineage',
+				type: 'json',
+				default: '={ "predecessors": [ { "internalPassportId": "", "trigger": "repurposing" } ] }',
+				description:
+					'Battery passports only. A repurposed, remanufactured or reused battery needs a new passport linked to the original(s) (Battery Regulation Art. 77(7)). Each predecessor needs internalPassportId (one of your passports) or identifier (its resolvable URI), plus trigger: preparation_for_reuse, preparation_for_repurposing, repurposing or remanufacturing. With no original passport (placed on the market before 18 Feb 2027), send an empty list and noPredecessorReason. batteryStatus is derived from the triggers.',
+				routing: { send: { type: 'body', property: 'lineage' } },
+			},
+		],
+	},
 	// ---- Create Batch ----------------------------------------------
 	{
 		displayName: 'Passports (JSON)',
@@ -711,7 +734,7 @@ export const passportFields: INodeProperties[] = [
 		required: true,
 		default: '=[\n  { "productId": "", "gs1": { "gtin": "", "serialNumber": "" } }\n]',
 		description:
-			'An array of up to 100 passports to create. Each item needs productId and an identifier. GS1 (default): { "productId": "...", "gs1": { "gtin": "...", "serialNumber": "..." } }. EN 18219 schemes: { "productId": "...", "identifier": { "scheme": "iso15459|iec61406|did|doi", ...scheme-specific fields } }. Battery passports accept only gs1 or iso15459 identifiers. Field values are not accepted here — create the shells, then set fields with Update Field.',
+			'An array of up to 100 passports to create. Each item needs productId and an identifier. GS1 (default): { "productId": "...", "gs1": { "gtin": "...", "serialNumber": "..." } }. EN 18219 schemes: { "productId": "...", "identifier": { "scheme": "iso15459|iec61406|did|doi", ...scheme-specific fields } }. Battery passports accept only gs1 or iso15459 identifiers. A battery item may carry a lineage block (second-life successor, Art. 77(7)), same shape as on Create. Field values are not accepted here — create the shells, then set fields with Update Field.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['createBatch'] },
 		},
