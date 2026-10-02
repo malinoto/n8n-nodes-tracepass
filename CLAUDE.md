@@ -133,4 +133,4 @@ body; they're set afterwards via Update Field or AI extraction. The `Create Batc
 operation's description says so, on purpose.
 
 ---
-*Part of the **TracePass workspace** (`~/projects/dpp`). Workspace-wide map, skills, and conventions live in `../.claude/` (CLAUDE.md + skills/ + agents/). Check there for cross-repo procedures (releases, category templates, locale passes, brand images) before reinventing them.*
+*Part of the **TracePass workspace** (`~/projects/dpp`). The workspace map lives in `../.claude/CLAUDE.md`; cross-repo skills and agents live in the **`tracepass-kb` plugin** (`../tracepass-kb-plugin/skills/<name>/`, invoked as `tracepass-kb:<name>` — e.g. `tracepass-kb:publish-npm-package`, `tracepass-kb:expose-v1-endpoint`). Check there for cross-repo procedures (releases, category templates, locale passes, brand images) before reinventing them.*

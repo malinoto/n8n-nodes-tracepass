@@ -29,9 +29,18 @@ In n8n: **Settings → Community Nodes → Install**, then enter
 
 ## Operations
 
+The operations below mirror the node's `nodes/TracePass/*Description.ts`
+files; if they ever disagree, the code is right.
+
 ### Product
 
 - **Create** — add a product to the catalogue
+- **Create Batch** — create up to 100 products in one call, with partial
+  success per item; the whole batch is counted against the daily write cap
+  upfront (if it would exceed the cap, nothing is created — 429). Products
+  are not billable on their own
+- **Archive** — soft-archive a product (reversible, not deletion); blocked
+  with 409 while any non-archived passport still references it
 - **Get** — retrieve a product by ID
 - **Get Many** — list products, with category / search filters
 - **Update** — update a product's name, model, or description
@@ -43,6 +52,11 @@ In n8n: **Settings → Community Nodes → Install**, then enter
   Charge*). For a repurposed, remanufactured or reused battery, add
   *Lineage (JSON)* under *Additional Options* to link the new passport
   to the original(s) (Battery Regulation Art. 77(7))
+- **Create Batch** — create up to 100 passport *shells* in one call (each
+  item: a product ID plus a GS1 GTIN + serial or an EN 18219 identifier
+  scheme; battery passports accept only GS1 or ISO 15459). Field values are
+  not accepted here — set them afterwards with *Update Field*. Partial
+  success per item; consumes one plan DPP slot per passport
 - **Capture Measurements** / **Capture Measurements by Serial** — push
   over-life battery data from your own equipment (state of health, cycle
   counts and the other Battery Regulation Annex XIII point 4 values) into a
@@ -56,6 +70,14 @@ In n8n: **Settings → Community Nodes → Install**, then enter
 - **Get QR** / **Get QR by Serial** — render the passport QR code
   (SVG / PNG / JSON), optionally in the company brand colour or an
   explicit colour, by ID or by serial
+- **Get Snapshots** — list a passport's immutability snapshots, newest
+  first (one is written on publish and after every change to a non-draft
+  passport), each with version, reason, actor, content hash and a
+  re-verified `hashValid`; set *As Of* to get the version valid at a given
+  moment instead
+- **Get Snapshot** — the full archival record of one snapshot: the complete
+  JSON-LD the passport asserted at that time, plus its content hash
+  (re-verified on read)
 - **Compliance** — get a three-tier compliance verdict (compliant /
   compliant_with_warnings / incomplete) with regulation-cited findings —
   missing required fields/parties, format issues, and per-category
@@ -149,10 +171,6 @@ passports and posts a summary to Slack.
 
 **CSV → passports** — read a CSV of serial numbers and create a
 passport per row.
-
-**Supplier follow-up** — a Schedule trigger lists supplier requests
-older than seven days and sends reminder emails.
-
 ## Compatibility
 
 Requires n8n 1.x. Tested against the current n8n community-node API
