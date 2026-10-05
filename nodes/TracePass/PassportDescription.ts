@@ -835,6 +835,32 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'body', property: 'value' },
 		},
 	},
+	{
+		displayName: 'Source',
+		name: 'fieldSource',
+		type: 'options',
+		default: 'manual',
+		description:
+			'Where the value came from. Manual is your own statement and is written with your credential\'s rights; AI Suggested goes to the review queue for a person to approve.',
+		options: [
+			{
+				name: 'AI Suggested',
+				value: 'ai_suggested',
+				description: 'Found or inferred by an AI step in your workflow. Lands in review; refused on fields only the economic operator may state or that must be measured.',
+			},
+			{
+				name: 'Manual',
+				value: 'manual',
+				description: 'Your own data, such as an ERP or PIM value',
+			},
+		],
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['updateField', 'updateFieldBySerial'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'source' },
+		},
+	},
 	// ---- Condition flags body (setConditionFlags / setConditionFlagsBySerial) ------
 	{
 		displayName: 'Flags (JSON)',

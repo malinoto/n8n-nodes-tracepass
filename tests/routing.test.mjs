@@ -424,3 +424,28 @@ describe('TracePass passport — battery measurements (living record)', () => {
 		expect(serial.displayOptions.show.operation).toContain('captureMeasurementsBySerial');
 	});
 });
+
+describe('TracePass passport — Update Field source', () => {
+	const props = new TracePass().description.properties;
+	const source = props.find((p) => p.name === 'fieldSource');
+
+	it('is offered on both update-field operations and sent as body.source', () => {
+		expect(source.displayOptions.show.operation).toEqual(['updateField', 'updateFieldBySerial']);
+		expect(source.routing.send).toEqual({ type: 'body', property: 'source' });
+	});
+
+	it('defaults to manual, the API default, so existing workflows send the same thing', () => {
+		expect(source.default).toBe('manual');
+	});
+
+	it('offers only manual and ai_suggested', () => {
+		expect(source.options.map((o) => o.value).sort()).toEqual(['ai_suggested', 'manual']);
+	});
+
+	it('offers only origins the platform accepts from API callers', () => {
+		const file = join(HERE, '..', '..', 'tracepass-platform', 'src', 'lib', 'passports', 'v1-claimable-sources.ts');
+		if (!existsSync(file)) return;
+		const text = readFileSync(file, 'utf8');
+		for (const o of source.options) expect(text, o.value).toContain(`"${o.value}"`);
+	});
+});
