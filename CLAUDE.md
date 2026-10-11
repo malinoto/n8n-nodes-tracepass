@@ -1,7 +1,7 @@
 # n8n-nodes-tracepass
 
 n8n community node for TracePass — automate EU Digital Product Passport
-workflows (products, passports, EPCIS supply-chain events) over the TracePass
+workflows (products, passports, EPCIS supply-chain events, DPP scope checks) over the TracePass
 v1 REST API.
 
 ## Publishing — via GitHub tag push, NOT `npm publish`
@@ -102,7 +102,7 @@ a new *action* on an existing resource doesn't risk the verified badge.
 - `nodes/TracePass/TracePass.node.ts` — node definition. `requestDefaults.baseURL`
   comes from the credential; every operation declares its HTTP `method` + `url`
   via declarative `routing`, so there's no imperative request code.
-- `nodes/TracePass/{Passport,Product,Epcis,Template}Description.ts` — per-resource
+- `nodes/TracePass/{Passport,Product,Epcis,Template,Scope}Description.ts` — per-resource
   operations + fields. Each operation's `routing.request` maps to one v1 endpoint;
   each field's `routing.send` maps to a body/query property.
 - `credentials/TracePassApi.credentials.ts` — API key (`tp_…`) + base URL.
