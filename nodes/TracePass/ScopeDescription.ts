@@ -118,7 +118,7 @@ export const scopeFields: INodeProperties[] = [
 		default: '',
 		placeholder: 'manufacturer',
 		description:
-			"The company's role in the supply chain (e.g. manufacturer, importer, distributor). Omit to see duties for all roles.",
+			"Your role in the act's terms: manufacturer, importer, distributor, authorised_representative or fulfilment_service_provider. Selling under your own name is manufacturer plus the fact ownBrand: true. Omit to see the duties of every role.",
 		displayOptions: {
 			show: { resource: ['scope'], operation: ['check'] },
 		},
