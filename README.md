@@ -119,9 +119,11 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 
 ### Scope
 
-- **Check** — ask whether a product type needs an EU Digital Product
-  Passport: from when, at which level, under which act, and what each
-  supply-chain role (manufacturer, importer, distributor) must do.
+- **Check** — ask what EU law says for a product type matching the
+  facts given: whether it needs a Digital Product Passport, from when,
+  at which level, under which act and article, and the duties of each
+  supply-chain role (manufacturer, importer, distributor). Not legal
+  advice.
   Accepts an optional product category, role, act-namespaced facts
   (e.g. `battery.use`), placing date and precision, locale, and
   optional product ID / passport ID to pull in saved facts. Available

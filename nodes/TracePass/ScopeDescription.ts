@@ -26,7 +26,7 @@ import type { INodeProperties } from 'n8n-workflow';
  */
 
 // ── Scope categories (extraction-core scope-rules/categories.yaml keys + 'other') ──────────────
-// NOTE: 'vehicles' is a scope-rules category (Motor Vehicle Regulation) and is
+// NOTE: 'vehicles' is a scope-rules category (End-of-Life Vehicles Regulation (EU) 2026/1738) and is
 // NOT a DPP template category. Do not confuse it with template category options.
 const SCOPE_CATEGORY_OPTIONS = [
 	{ name: 'Battery', value: 'battery' },
@@ -61,7 +61,7 @@ export const scopeOperations: INodeProperties[] = [
 				value: 'check',
 				action: 'Check product scope',
 				description:
-					'Ask whether a product type needs an EU Digital Product Passport — from when, at which level, under which act, and what each role must do. Every plan, Free included. Counted against the scope-answer cap (≈100/day), not the v1 daily read cap.',
+					'Ask what EU law says for a product type matching the facts given: whether it needs a Digital Product Passport, from when, at which level, under which act and article, and the duties of each role. Not legal advice. Every plan, Free included. Counted against the scope-answer cap (≈100/day), not the v1 daily read cap.',
 				routing: {
 					request: {
 						method: 'POST',
