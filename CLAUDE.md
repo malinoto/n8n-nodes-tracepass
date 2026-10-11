@@ -49,6 +49,10 @@ green run.
 
 ## Build, lint & test
 
+**An OpenAI key is used only for local n8n AI-agent test workflows** (the platform itself
+uses only Anthropic). It belongs to this workspace and never to another project. If it
+is missing, say so and ask; don't hunt the machine for one.
+
 ```bash
 npm run build      # n8n-node build — compiles TS to dist/, copies icons
 npm run lint       # n8n-node lint — n8n node-spec linter (naming, display rules)

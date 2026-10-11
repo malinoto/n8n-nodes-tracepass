@@ -425,6 +425,181 @@ describe('TracePass passport — battery measurements (living record)', () => {
 	});
 });
 
+describe('TracePass scope — Check and Get Catalogue Report', () => {
+	const props = new TracePass().description.properties;
+	const routes = collectRoutes();
+
+	it('Check routes to POST /api/v1/scope/check', () => {
+		const r = routes.find((r) => r.owner === 'operation:check');
+		expect(r, 'check route missing').toBeTruthy();
+		expect(r.method).toBe('POST');
+		expect(r.url).toBe('/api/v1/scope/check');
+	});
+
+	it('Get Catalogue Report routes to GET /api/v1/scope/catalogue', () => {
+		const r = routes.find((r) => r.owner === 'operation:getCatalogueReport');
+		expect(r, 'getCatalogueReport route missing').toBeTruthy();
+		expect(r.method).toBe('GET');
+		expect(r.url).toBe('/api/v1/scope/catalogue');
+	});
+
+	it('scopeCategory sends to body.category on Check', () => {
+		const f = props.find((p) => p.name === 'scopeCategory');
+		expect(f, 'scopeCategory field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('check');
+		expect(f.routing?.send?.type).toBe('body');
+		expect(f.routing?.send?.property).toBe('category');
+	});
+
+	it('scopeRole sends to body.role on Check', () => {
+		const f = props.find((p) => p.name === 'scopeRole');
+		expect(f, 'scopeRole field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('check');
+		expect(f.routing?.send?.type).toBe('body');
+		expect(f.routing?.send?.property).toBe('role');
+	});
+
+	it('scopeFacts sends to body.facts on Check', () => {
+		const f = props.find((p) => p.name === 'scopeFacts');
+		expect(f, 'scopeFacts field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('check');
+		expect(f.routing?.send?.type).toBe('body');
+		expect(f.routing?.send?.property).toBe('facts');
+	});
+
+	it('placingDate sends to body.placedOnMarket.date on Check', () => {
+		const f = props.find((p) => p.name === 'placingDate');
+		expect(f, 'placingDate field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('check');
+		expect(f.routing?.send?.type).toBe('body');
+		expect(f.routing?.send?.property).toBe('placedOnMarket.date');
+	});
+
+	it('placingPrecision sends to body.placedOnMarket.precision on Check', () => {
+		const f = props.find((p) => p.name === 'placingPrecision');
+		expect(f, 'placingPrecision field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('check');
+		expect(f.routing?.send?.type).toBe('body');
+		expect(f.routing?.send?.property).toBe('placedOnMarket.precision');
+	});
+
+	it('scopeLocale sends to body.locale on Check', () => {
+		const f = props.find((p) => p.name === 'scopeLocale');
+		expect(f, 'scopeLocale field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('check');
+		expect(f.routing?.send?.type).toBe('body');
+		expect(f.routing?.send?.property).toBe('locale');
+	});
+
+	it('scopeLocale exposes all four supported locales', () => {
+		const f = props.find((p) => p.name === 'scopeLocale');
+		const values = (f?.options ?? []).map((o) => o.value);
+		expect(values).toContain('en');
+		expect(values).toContain('bg');
+		expect(values).toContain('de');
+		expect(values).toContain('it');
+	});
+
+	it('checkOptions collection is shown only for Check', () => {
+		const f = props.find((p) => p.name === 'checkOptions');
+		expect(f, 'checkOptions collection missing').toBeTruthy();
+		expect(f.type).toBe('collection');
+		expect(f.displayOptions?.show?.operation).toEqual(['check']);
+	});
+
+	it('checkOptions collection includes productId and passportId', () => {
+		const f = props.find((p) => p.name === 'checkOptions');
+		const names = (f?.options ?? []).map((o) => o.name);
+		expect(names).toContain('productId');
+		expect(names).toContain('passportId');
+	});
+
+	it('scopeCategory includes vehicles (a scope-rules-only category, not a template category)', () => {
+		const f = props.find((p) => p.name === 'scopeCategory');
+		const values = (f?.options ?? []).map((o) => o.value);
+		expect(values).toContain('vehicles');
+		expect(values).toContain('other');
+		expect(values).toContain('battery');
+	});
+
+	it('catalogueClassification sends to query.classification on Get Catalogue Report', () => {
+		const f = props.find((p) => p.name === 'catalogueClassification');
+		expect(f, 'catalogueClassification field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getCatalogueReport');
+		expect(f.routing?.send?.type).toBe('query');
+		expect(f.routing?.send?.property).toBe('classification');
+	});
+
+	it('catalogueChanged sends to query.changed on Get Catalogue Report', () => {
+		const f = props.find((p) => p.name === 'catalogueChanged');
+		expect(f, 'catalogueChanged field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getCatalogueReport');
+		expect(f.routing?.send?.type).toBe('query');
+		expect(f.routing?.send?.property).toBe('changed');
+	});
+
+	it('catalogueLimit sends to query.limit and caps at 500', () => {
+		const f = props.find((p) => p.name === 'catalogueLimit');
+		expect(f, 'catalogueLimit field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getCatalogueReport');
+		expect(f.routing?.send?.type).toBe('query');
+		expect(f.routing?.send?.property).toBe('limit');
+		expect(f.typeOptions?.maxValue).toBe(500);
+	});
+
+	it('catalogueCursor sends to query.cursor on Get Catalogue Report', () => {
+		const f = props.find((p) => p.name === 'catalogueCursor');
+		expect(f, 'catalogueCursor field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getCatalogueReport');
+		expect(f.routing?.send?.type).toBe('query');
+		expect(f.routing?.send?.property).toBe('cursor');
+	});
+
+	it('catalogueCategory sends to query.category on Get Catalogue Report', () => {
+		const f = props.find((p) => p.name === 'catalogueCategory');
+		expect(f, 'catalogueCategory field missing').toBeTruthy();
+		expect(f.displayOptions?.show?.operation).toContain('getCatalogueReport');
+		expect(f.routing?.send?.type).toBe('query');
+		expect(f.routing?.send?.property).toBe('category');
+	});
+
+	it('catalogue classification filter covers all seven platform classification values', () => {
+		const f = props.find((p) => p.name === 'catalogueClassification');
+		const values = (f?.options ?? []).map((o) => o.value).filter(Boolean);
+		expect(values).toContain('missing');
+		expect(values).toContain('draft_only');
+		expect(values).toContain('published_incomplete');
+		expect(values).toContain('published');
+		expect(values).toContain('not_required');
+		expect(values).toContain('open_questions');
+		expect(values).toContain('not_covered');
+	});
+
+	it('scope operations are only shown for the scope resource', () => {
+		const scopeOps = props.find(
+			(p) => p.name === 'operation' && p.displayOptions?.show?.resource?.includes('scope'),
+		);
+		expect(scopeOps, 'scope operation selector missing').toBeTruthy();
+		expect(scopeOps.displayOptions?.show?.resource).toEqual(['scope']);
+	});
+
+	it('scope routes match real platform v1 routes', () => {
+		if (!existsSync(PLATFORM_V1)) return;
+		const real = platformRouteShapes();
+		const scopeRoutes = routes.filter(
+			(r) => r.owner === 'operation:check' || r.owner === 'operation:getCatalogueReport',
+		);
+		expect(scopeRoutes.length).toBe(2);
+		for (const r of scopeRoutes) {
+			const shape = toRouteShape(r.url);
+			expect(
+				real.has(shape),
+				`${r.owner} → ${r.method} ${r.url}\n  no platform route matches shape "${shape}"`,
+			).toBe(true);
+		}
+	});
+});
+
 describe('TracePass passport — Update Field source', () => {
 	const props = new TracePass().description.properties;
 	const source = props.find((p) => p.name === 'fieldSource');

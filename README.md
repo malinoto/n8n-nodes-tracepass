@@ -117,6 +117,27 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 - **Query** — query the EPCIS event store with the standard EPCIS
   query filters (requires the EPCIS add-on)
 
+### Scope
+
+- **Check** — ask whether a product type needs an EU Digital Product
+  Passport: from when, at which level, under which act, and what each
+  supply-chain role (manufacturer, importer, distributor) must do.
+  Accepts an optional product category, role, act-namespaced facts
+  (e.g. `battery.use`), placing date and precision, locale, and
+  optional product ID / passport ID to pull in saved facts. Available
+  on every plan, Free included. Counted against the scope-answer cap
+  (≈100/day, 30/min burst), not the v1 daily read cap. 429
+  `scope_answer_cap` with `Retry-After` past it.
+- **Get Catalogue Report** — get the company-wide scope report: for
+  every product and every distinct fact set among its passports,
+  whether a passport is needed, from when, at which level and under
+  which act. Filter by classification, category or *Changed Only* to
+  see only rows whose answer changed in the most recent run. Use
+  `nextCursor` to page through the full report (up to 500 rows per
+  page). Requires Growth plan or above (`scopeCatalogueEnabled`); 403
+  `plan_upgrade_required` below that. Counts one v1 daily read per
+  page.
+
 ### Template
 
 - **Get Many** — list the DPP category templates with their field

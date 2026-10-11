@@ -4,6 +4,7 @@ import { NodeConnectionTypes } from 'n8n-workflow';
 import { productOperations, productFields } from './ProductDescription';
 import { passportOperations, passportFields } from './PassportDescription';
 import { epcisOperations, epcisFields } from './EpcisDescription';
+import { scopeOperations, scopeFields } from './ScopeDescription';
 import { templateOperations, templateFields } from './TemplateDescription';
 
 /**
@@ -15,10 +16,11 @@ import { templateOperations, templateFields } from './TemplateDescription';
  * (n8n's own HTTP layer makes the calls) — a requirement for n8n's
  * community-node verification.
  *
- * Four resources, mirroring the v1 API:
+ * Five resources, mirroring the v1 API:
  *   - Product   — the catalogue layer
  *   - Passport  — Digital Product Passports + their lifecycle
  *   - EPCIS     — GS1 EPCIS 2.0 supply-chain events
+ *   - Scope     — "Do I need a DPP?" check and catalogue-wide scope report
  *   - Template  — DPP category field schemas (read-only reference)
  */
 export class TracePass implements INodeType {
@@ -115,6 +117,11 @@ export class TracePass implements INodeType {
 						description: 'The catalogue layer — one product can have many passports',
 					},
 					{
+						name: 'Scope',
+						value: 'scope',
+						description: 'Check whether a product type needs a DPP and get the company-wide scope catalogue report',
+					},
+					{
 						name: 'Template',
 						value: 'template',
 						description: 'DPP category field schemas — discover regulatory requirements',
@@ -128,6 +135,8 @@ export class TracePass implements INodeType {
 			...passportFields,
 			...epcisOperations,
 			...epcisFields,
+			...scopeOperations,
+			...scopeFields,
 			...templateOperations,
 			...templateFields,
 		],
