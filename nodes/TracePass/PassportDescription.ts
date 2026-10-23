@@ -4,9 +4,10 @@ import type { INodeProperties } from 'n8n-workflow';
  * Passport resource — operations + fields.
  *
  * Covers the Digital Product Passport lifecycle. Note the safety
- * notes in the operation descriptions: Create is billable (consumes
- * a plan DPP slot) and Archive is irreversible — the n8n user sees
- * these in the operation picker.
+ * notes in the operation descriptions: Create makes an unbilled draft
+ * (a plan DPP slot is taken only at publish, in the TracePass
+ * dashboard) and Archive is irreversible — the n8n user sees these in
+ * the operation picker.
  */
 
 export const passportOperations: INodeProperties[] = [
@@ -88,7 +89,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'create',
 				action: 'Create a passport',
 				description:
-					'Create a new Digital Product Passport. Consumes a plan DPP slot. Supports GS1 (GTIN + serial, default) and EN 18219 identifier schemes (ISO 15459, IEC 61406, DID, DOI). Battery passports accept only GS1 or ISO 15459 (Battery Regulation Art. 77(3)).',
+					'Create a new Digital Product Passport as a draft. A draft takes no plan DPP slot and is not billed; the slot, and any overage past the plan cap, is taken when it is published in the TracePass dashboard. Supports GS1 (GTIN + serial, default) and EN 18219 identifier schemes (ISO 15459, IEC 61406, DID, DOI). Battery passports accept only GS1 or ISO 15459 (Battery Regulation Art. 77(3)).',
 				routing: {
 					request: {
 						method: 'POST',
@@ -101,7 +102,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'createBatch',
 				action: 'Create many passports in one call',
 				description:
-					'Create up to 100 passport SHELLS in one call. Each item needs productId and an identifier — use gs1.gtin + gs1.serialNumber for GS1, or identifier.{scheme,...} for EN 18219 schemes (iso15459, iec61406, did, doi). Battery passports accept only gs1 or iso15459 (Art. 77(3)). Field values are not accepted here — set them with Update Field. Partial success per item; consumes one plan DPP slot per passport.',
+					'Create up to 100 passport SHELLS in one call. Each item needs productId and an identifier — use gs1.gtin + gs1.serialNumber for GS1, or identifier.{scheme,...} for EN 18219 schemes (iso15459, iec61406, did, doi). Battery passports accept only gs1 or iso15459 (Art. 77(3)). Field values are not accepted here — set them with Update Field. Partial success per item. The passports are drafts, so they take no plan DPP slot until they are published in the TracePass dashboard.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -740,21 +741,6 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'body', property: 'identifier.granularity' },
 		},
 	},
-	// ---- Overage (applies to all create schemes) -----------------------
-	{
-		displayName: 'Confirm Overage Charge',
-		name: 'confirmOverage',
-		type: 'boolean',
-		default: false,
-		description:
-			'Whether to accept a per-passport overage charge if the account is over its plan DPP quota. Leave off to fail safely when over quota.',
-		displayOptions: {
-			show: { resource: ['passport'], operation: ['create'] },
-		},
-		routing: {
-			send: { type: 'body', property: 'confirmOverage' },
-		},
-	},
 	// ---- Second-life battery lineage (Art. 77(7)) -------------------
 	// In a collection so nothing is sent unless the user adds it.
 	{
@@ -792,20 +778,6 @@ export const passportFields: INodeProperties[] = [
 		},
 		routing: {
 			send: { type: 'body', property: 'passports' },
-		},
-	},
-	{
-		displayName: 'Confirm Overage Charge',
-		name: 'batchConfirmOverage',
-		type: 'boolean',
-		default: false,
-		description:
-			'Whether to accept per-passport overage charges if the batch pushes the account over its plan DPP quota. Leave off to fail safely (402) when the whole batch would exceed quota.',
-		displayOptions: {
-			show: { resource: ['passport'], operation: ['createBatch'] },
-		},
-		routing: {
-			send: { type: 'body', property: 'confirmOverage' },
 		},
 	},
 	// ---- Update Field ----------------------------------------------

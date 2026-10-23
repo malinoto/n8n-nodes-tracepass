@@ -75,9 +75,8 @@ pick the operation, fill in fields, click **Execute step**.
 ## 4. Passport resource
 
 - [ ] **Create** — productId = (the product ID), gtin = a valid
-      14-digit GTIN, serialNumber = a unique string,
-      confirmOverage = **off** (default). Returns 201 with the
-      passport ID. Note the ID
+      14-digit GTIN, serialNumber = a unique string. Returns 201
+      with the passport ID and status draft. Note the ID
 - [ ] **Get** — paste the passport ID. Returns the passport
 - [ ] **Get by Serial** — paste the serial number. Returns the
       same passport

@@ -624,3 +624,25 @@ describe('TracePass passport — Update Field source', () => {
 		for (const o of source.options) expect(text, o.value).toContain(`"${o.value}"`);
 	});
 });
+
+describe('TracePass passport — create sends no overage consent', () => {
+	// Creating a passport makes a draft, which takes no plan slot: the platform
+	// decides the cap and any overage at publish (dashboard only), and ignores a
+	// confirmOverage on create. A toggle here would tell users create is billed.
+	const properties = new TracePass().description.properties;
+	const createOps = ['create', 'createBatch'];
+	const onCreate = properties.filter((p) => {
+		const show = p.displayOptions?.show;
+		return show?.resource?.includes('passport') && show?.operation?.some((o) => createOps.includes(o));
+	});
+
+	it('has create properties to check', () => {
+		expect(onCreate.length).toBeGreaterThan(0);
+	});
+
+	it('no create property sends confirmOverage', () => {
+		const sendsOverage = (p) =>
+			p.routing?.send?.property === 'confirmOverage' || (p.options ?? []).some(sendsOverage);
+		expect(onCreate.filter(sendsOverage).map((p) => p.name)).toEqual([]);
+	});
+});

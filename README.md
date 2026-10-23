@@ -47,9 +47,9 @@ files; if they ever disagree, the code is right.
 
 ### Passport
 
-- **Create** — create a Digital Product Passport (consumes a plan
-  DPP slot — billable; opt in to overage with *Confirm Overage
-  Charge*). For a repurposed, remanufactured or reused battery, add
+- **Create** — create a Digital Product Passport as a draft (a draft
+  takes no plan DPP slot and is not billed; the slot, and any overage,
+  is taken when it is published in the TracePass dashboard). For a repurposed, remanufactured or reused battery, add
   *Lineage (JSON)* under *Additional Options* to link the new passport
   to the original(s) (Battery Regulation Art. 77(7))
 - **Create Batch** — create up to 100 passport *shells* in one call (each
