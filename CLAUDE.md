@@ -132,9 +132,10 @@ operation here, update that constant in the marketing repo in lockstep.
 Body shapes, response shapes, and limits must match the platform's v1 routes
 (`tracepass-platform/src/app/api/v1/`) and the OpenAPI spec
 (`tracepass/public/openapi.yaml`). Notably: `POST /api/v1/passports/batch` creates
-passport **shells** (`fields: {}`) — field values are NOT accepted in the batch
-body; they're set afterwards via Update Field or AI extraction. The `Create Batch`
+draft passports seeded like a single create (every template key, product and
+template defaults) — field values are NOT accepted in the batch body; they're set
+afterwards via Update Field or AI extraction. The `Create Batch`
 operation's description says so, on purpose.
 
 ---
-*Part of the **TracePass workspace** (`~/projects/dpp`). The workspace map lives in `../.claude/CLAUDE.md`; cross-repo skills and agents live in the **`tracepass-kb` plugin** (`../tracepass-kb-plugin/skills/<name>/`, invoked as `tracepass-kb:<name>` — e.g. `tracepass-kb:publish-npm-package`, `tracepass-kb:expose-v1-endpoint`). Check there for cross-repo procedures (releases, category templates, locale passes, brand images) before reinventing them.*
+*Part of the **TracePass workspace**. The workspace map lives in `../.claude/CLAUDE.md`; cross-repo skills and agents live in the **`tracepass-kb` plugin** (`../tracepass-kb-plugin/skills/<name>/`, invoked as `tracepass-kb:<name>` — e.g. `tracepass-kb:publish-npm-package`, `tracepass-kb:expose-v1-endpoint`). Check there for cross-repo procedures (releases, category templates, locale passes, brand images) before reinventing them.*
