@@ -100,7 +100,12 @@ files; if they ever disagree, the code is right.
 - **Suspend** / **Suspend by Serial** — suspend a published passport
   (reversible), by ID or by serial
 - **Archive** / **Archive by Serial** — archive a passport
-  (**irreversible** — the public QR permanently 404s), by ID or by serial
+  (**irreversible** — the public QR permanently 404s), by ID or by serial.
+  The optional **Reason** (Recycled, Never Placed, Duplicate or Error) is
+  **required for battery passports**: a battery passport ends only when the
+  battery has been recycled, was never placed on the market or put into
+  service, or is a duplicate or erroneous record. A passport marked for
+  deletion cannot be archived (409)
 
 The **by-serial** operations address a passport by your own serial number.
 A serial is unique only *within a GTIN*, so if the same serial exists under

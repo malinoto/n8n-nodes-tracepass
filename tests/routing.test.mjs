@@ -646,3 +646,42 @@ describe('TracePass passport — create sends no overage consent', () => {
 		expect(onCreate.filter(sendsOverage).map((p) => p.name)).toEqual([]);
 	});
 });
+
+describe('TracePass passport — archive reason (battery end of passport)', () => {
+	// The platform requires one of a closed set of reasons to archive a battery
+	// passport (400 reason_required / invalid_reason) and reads it from the JSON
+	// body `{ reason }`. Without this field a battery passport cannot be archived
+	// from n8n at all.
+	const props = new TracePass().description.properties;
+	const reason = props.find((p) => p.name === 'archiveReason');
+	const platformFile = (...segs) => join(HERE, '..', '..', 'tracepass-platform', ...segs);
+
+	it('is offered on both archive operations only', () => {
+		expect(reason, 'archiveReason field missing').toBeTruthy();
+		expect(reason.displayOptions.show.resource).toEqual(['passport']);
+		expect(reason.displayOptions.show.operation).toEqual(['archive', 'archiveBySerial']);
+	});
+
+	it('is sent as body.reason, and omitted when left empty', () => {
+		expect(reason.routing.send).toEqual({ type: 'body', property: 'reason', value: '={{ $value || undefined }}' });
+		expect(reason.default).toBe('');
+		expect(reason.required).toBeFalsy();
+	});
+
+	it('offers exactly the three platform reasons plus empty', () => {
+		expect(reason.options.map((o) => o.value).sort()).toEqual(['', 'duplicate_or_error', 'never_placed', 'recycled']);
+	});
+
+	it('offers only reasons the platform accepts, and both archive routes read body.reason', () => {
+		const types = platformFile('src', 'types', 'index.ts');
+		if (!existsSync(types)) return;
+		const line = readFileSync(types, 'utf8').split('\n').find((l) => l.includes('export const DELETION_REASONS'));
+		expect(line, 'DELETION_REASONS not found in the platform types').toBeTruthy();
+		const platformReasons = [...line.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
+		expect(reason.options.map((o) => o.value).filter(Boolean).sort()).toEqual(platformReasons);
+		for (const route of [['passports', '[id]', 'archive'], ['passports', 'by-serial', '[serial]', 'archive']]) {
+			const text = readFileSync(join(PLATFORM_V1, ...route, 'route.ts'), 'utf8');
+			expect(text, route.join('/')).toContain('"reason" in body');
+		}
+	});
+});

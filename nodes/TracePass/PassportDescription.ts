@@ -24,7 +24,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Archive',
 				value: 'archive',
 				action: 'Archive a passport',
-				description: 'Permanently archive a passport. The public QR will return 404.',
+				description:
+					'Permanently archive a passport. The public QR will return 404. Battery passports need a Reason.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -37,7 +38,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'archiveBySerial',
 				action: 'Archive a passport by serial',
 				description:
-					'Permanently archive a passport addressed by its serial number. The public QR will return 404. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
+					'Permanently archive a passport addressed by its serial number. The public QR will return 404. Battery passports need a Reason. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -441,6 +442,30 @@ export const passportFields: INodeProperties[] = [
 		},
 		routing: {
 			send: { type: 'query', property: 'gtin' },
+		},
+	},
+	// ---- Archive reason (archive / archiveBySerial) ----------------
+	// The platform requires a closed reason for a battery passport (400
+	// reason_required / invalid_reason) and validates one when given for any
+	// other category. Empty sends no body property at all.
+	{
+		displayName: 'Reason',
+		name: 'archiveReason',
+		type: 'options',
+		default: '',
+		description:
+			'Required for battery passports: why the passport ends. A battery passport ends only when the battery has been recycled, so the choices are recycled, never placed on the market or put into service, or a duplicate or erroneous record.',
+		options: [
+			{ name: '(None)', value: '' },
+			{ name: 'Duplicate or Error', value: 'duplicate_or_error', description: 'A duplicate or erroneous record' },
+			{ name: 'Never Placed', value: 'never_placed', description: 'Never placed on the market or put into service' },
+			{ name: 'Recycled', value: 'recycled', description: 'The battery has been recycled' },
+		],
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['archive', 'archiveBySerial'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'reason', value: '={{ $value || undefined }}' },
 		},
 	},
 	// ---- QR rendering options --------------------------------------
