@@ -253,7 +253,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'placeOnMarket',
 				action: 'Place a battery passport on the market',
 				description:
-					'Register a published battery passport in the EU DPP registry under your account\'s own registry access (Battery Regulation Art. 77(4)). A legal act for the economic operator. Asynchronous: returns 202 with status placing; read the passport later \u2014 placeOnMarketStatus becomes placed (registrationId) or rejected (registrationRejectionReason; run this again to retry). Refusals return 409 with a code: not_a_battery, not_published, already_placed, operator_id_missing, registry_not_configured or registry_not_ready (with findings). After placement the operator and facility identifiers are locked.',
+					'Register a published battery passport in the EU DPP registry under your account\'s own registry access (the upload Battery Regulation Art. 77(10) requires). A legal act for the economic operator. Asynchronous: returns 202 with status placing; read the passport later \u2014 placeOnMarketStatus becomes placed (registrationId) or rejected (registrationRejectionReason; run this again to retry). Refusals return 409 with a code: not_a_battery, not_published, already_placed, operator_id_missing, registry_not_configured or registry_not_ready (with findings). After placement the operator and facility identifiers are locked.',
 				routing: {
 					request: {
 						method: 'POST',

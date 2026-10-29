@@ -87,8 +87,8 @@ files; if they ever disagree, the code is right.
   formatting, a resolvable public link). The registry's mechanical
   pre-submission check, not the substantive compliance verdict. Battery only
 - **Place on Market** — register a published battery passport in the EU DPP
-  registry under your account's own registry access (Battery Regulation
-  Art. 77(4)). Asynchronous: returns 202 (`placing`); read the passport to see
+  registry under your account's own registry access (the upload Battery
+  Regulation Art. 77(10) requires). Asynchronous: returns 202 (`placing`); read the passport to see
   `placed` (with `registrationId`) or `rejected` (with
   `registrationRejectionReason`), and run it again to retry a rejection.
   Refused with 409 and a code (`not_a_battery`, `not_published`,
