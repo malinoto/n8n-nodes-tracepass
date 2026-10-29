@@ -86,6 +86,15 @@ files; if they ever disagree, the code is right.
   Registry's formal submission gate (mandatory fields present, correct
   formatting, a resolvable public link). The registry's mechanical
   pre-submission check, not the substantive compliance verdict. Battery only
+- **Place on Market** — register a published battery passport in the EU DPP
+  registry under your account's own registry access (Battery Regulation
+  Art. 77(4)). Asynchronous: returns 202 (`placing`); read the passport to see
+  `placed` (with `registrationId`) or `rejected` (with
+  `registrationRejectionReason`), and run it again to retry a rejection.
+  Refused with 409 and a code (`not_a_battery`, `not_published`,
+  `already_placed`, `operator_id_missing`, `registry_not_configured`,
+  `registry_not_ready` with `findings`). After placement the operator and
+  facility identifiers are locked. Battery only
 - **Get Condition Flags** / **Get Condition Flags by Serial** — read the
   condition-classification flags for a passport — approved yes/no facts
   (e.g. battery: `hasBMS`, `rechargeable`, `externalStorageOnly`,

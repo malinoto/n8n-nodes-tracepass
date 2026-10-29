@@ -685,3 +685,36 @@ describe('TracePass passport — archive reason (battery end of passport)', () =
 		}
 	});
 });
+
+describe('TracePass passport — Place on Market (battery EU registry entry)', () => {
+	const props = new TracePass().description.properties;
+	const opProp = props.find(
+		(p) => p.name === 'operation' && p.displayOptions?.show?.resource?.includes('passport'),
+	);
+	const op = (opProp?.options ?? []).find((o) => o.value === 'placeOnMarket');
+	const platformFile = (...segs) =>
+		process.env.TRACEPASS_PLATFORM_PATH
+			? join(process.env.TRACEPASS_PLATFORM_PATH, ...segs)
+			: join(HERE, '..', '..', 'tracepass-platform', ...segs);
+
+	it('is a POST to the place-on-market route of the chosen passport', () => {
+		expect(op, 'placeOnMarket operation missing').toBeTruthy();
+		expect(op.routing.request.method).toBe('POST');
+		expect(op.routing.request.url).toBe('=/api/v1/passports/{{$parameter["passportId"]}}/place-on-market');
+	});
+
+	it('shows the Passport ID field and sends no other parameter', () => {
+		const shown = props.filter((p) => p.displayOptions?.show?.operation?.includes('placeOnMarket'));
+		expect(shown.map((p) => p.name)).toEqual(['passportId']);
+	});
+
+	it('names every 409 refusal code the platform gate returns', () => {
+		const pure = platformFile('src', 'lib', 'passports', 'place-on-market-pure.ts');
+		if (!existsSync(pure)) return;
+		const src = readFileSync(pure, 'utf8');
+		const union = src.slice(src.indexOf('export type PlaceOnMarketGateCode'), src.indexOf(';', src.indexOf('export type PlaceOnMarketGateCode')));
+		const codes = [...union.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).filter((c) => c !== 'ok');
+		expect(codes.length).toBe(6);
+		for (const c of codes) expect(op.description, c).toContain(c);
+	});
+});
