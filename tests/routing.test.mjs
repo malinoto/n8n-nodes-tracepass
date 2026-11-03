@@ -714,7 +714,10 @@ describe('TracePass passport — Place on Market (battery EU registry entry)', (
 		const src = readFileSync(pure, 'utf8');
 		const union = src.slice(src.indexOf('export type PlaceOnMarketGateCode'), src.indexOf(';', src.indexOf('export type PlaceOnMarketGateCode')));
 		const codes = [...union.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).filter((c) => c !== 'ok');
-		expect(codes.length).toBe(6);
+		// The floor guards the parser (a broken slice would find none and pass
+		// vacuously); the loop below is what checks the description. A new gate
+		// code fails the loop until the description names it, without a count here.
+		expect(codes.length).toBeGreaterThanOrEqual(7);
 		for (const c of codes) expect(op.description, c).toContain(c);
 	});
 });
