@@ -46,6 +46,15 @@ green run.
   settings → Trusted Publishers → GitHub Actions, workflow `publish.yml`).
 - The version in `package.json` and `package-lock.json` must match before tagging
   — `npm install --package-lock-only` syncs the lockfile after a manual bump.
+- **CI and publish must install with the same npm** (both run
+  `npm install --global npm@latest` before `npm ci`). The current npm blocks install
+  scripts not covered by `allowScripts`, so `isolated-vm`'s native build (a
+  transitive dev dependency that lint, test and build never load) is skipped. The
+  npm bundled with Node 26 LTS still runs it, finds no prebuild and fails compiling,
+  so a workflow without the upgrade goes red while the other publishes fine.
+- **`actions/setup-node` stays on v5**, not v7: v7 removes the dummy
+  `NODE_AUTH_TOKEN` export, and the OIDC publish path's behaviour depends on how that
+  token is set (see the v1.0.1/v1.0.2 note). Move to v7 only with a test release.
 
 ## Build, lint & test
 
