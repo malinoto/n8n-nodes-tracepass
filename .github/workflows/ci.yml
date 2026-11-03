@@ -55,6 +55,16 @@ jobs:
           node-version: lts/*
           cache: npm
 
+      # Install exactly as the publish workflow does: with the latest npm. The
+      # current npm blocks install scripts not covered by `allowScripts`, so
+      # `isolated-vm`'s native build (a transitive dev dependency nothing in
+      # lint, test or build loads) is skipped. The npm bundled with Node 26 LTS
+      # still runs it, finds no prebuild for that ABI and dies compiling from
+      # source, which failed CI while the same commit published fine. Keeping
+      # the two workflows' install identical is what this step is for.
+      - name: Upgrade npm
+        run: npm install --global npm@latest
+
       - name: Install dependencies
         run: npm ci
 
