@@ -86,9 +86,36 @@ files; if they ever disagree, the code is right.
   Registry's formal submission gate (mandatory fields present, correct
   formatting, a resolvable public link). The registry's mechanical
   pre-submission check, not the substantive compliance verdict. Battery only
-- **Place on Market** — register a published battery passport in the EU DPP
-  registry under your account's own registry access (the upload Battery
-  Regulation Art. 77(10) requires). Asynchronous: returns 202 (`placing`); read the passport to see
+- **Get Registry Address** — prepare the address (UPI) to paste into the EU
+  DPP Registry's online form for a published battery passport. The economic
+  operator registers the passport itself on the Registry website under its
+  own EU Login; TracePass prepares the address and records the preparation,
+  and never submits. Returns `{ upi, preparedAt }`; refused with 409
+  (`not_a_battery`, `not_published`, `registered_in_production`,
+  `registry_not_ready` with `findingDetails`, `invalid_upi`). Battery only,
+  paid plans
+- **Create Registry Upload File** — build the EU DPP Registry upload file
+  for 1–100 battery passports (*Passport IDs*, comma-separated), for the
+  operator to upload on the Registry website. Only passports that would pass
+  go in; the rest come back in `excluded` with a reason, because the Registry
+  rejects the whole file over one bad entry. Returns
+  `{ xml, filename, included, excluded }` — save `xml` under `filename`.
+  Paid plans
+- **Record Registry Result** — record what the operator reports after acting
+  on the Registry website. *Production*: the passport is registered
+  (optional *Date of Placing on the Market* and *Registration ID*); the
+  operator parties lock. *Acceptance*: a test result (*Passed* / *Failed*,
+  optional *Error Code*) with no legal effect. The operator's statement —
+  TracePass does not verify it with the Registry. Paid plans
+- **Undo Registry Result** — remove a mistakenly recorded production or
+  acceptance result (TracePass's record only, never the Registry; a
+  registration made through an EN 18222 registry API is not undone here).
+  Paid plans
+- **Place on Market** — register a published battery passport through an
+  EN 18222 registry API under your account's own registry access. The EU DPP
+  Registry does not accept this path — for it, use *Get Registry Address* or
+  *Create Registry Upload File*, register on the Registry website, then
+  *Record Registry Result*. Asynchronous: returns 202 (`placing`); read the passport to see
   `placed` (with `registrationId`) or `rejected` (with
   `registrationRejectionReason`), and run it again to retry a rejection.
   Refused with 409 and a code (`not_a_battery`, `not_published`,

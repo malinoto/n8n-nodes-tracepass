@@ -112,6 +112,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Create Registry Upload File',
+				value: 'createRegistryUploadFile',
+				action: 'Create a registry upload file',
+				description:
+					'Build the EU DPP Registry upload file for up to 100 battery passports. The economic operator uploads it on the Registry website under its own EU Login; TracePass prepares the file and records the preparation, and never submits. Only passports that would pass go in (published batteries, not registered in production, no blocking readiness finding), because the Registry rejects the whole file over one bad entry; every other passport comes back in excluded with its reason. Returns { xml, filename, included, excluded }: save xml under filename. Paid plans only.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '/api/v1/registry/upload-file',
+					},
+				},
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				action: 'Get a passport',
@@ -224,6 +237,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Registry Address',
+				value: 'getRegistryAddress',
+				action: 'Get the registry address for a passport',
+				description:
+					'Prepare the address (UPI) to paste into the EU DPP Registry\'s online form for a published battery passport. The economic operator registers the passport itself on the Registry website under its own EU Login; TracePass prepares the address and records the preparation, and never submits. The first call fixes the address on the passport so the Registry\'s copy keeps resolving. Returns { upi, preparedAt }. Refusals return 409 with a code: not_a_battery, not_published, registered_in_production, registry_not_ready (with findingDetails) or invalid_upi. Paid plans only.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/registry-upi',
+					},
+				},
+			},
+			{
 				name: 'Get Snapshot',
 				value: 'getSnapshot',
 				action: 'Get a passport snapshot',
@@ -253,11 +279,24 @@ export const passportOperations: INodeProperties[] = [
 				value: 'placeOnMarket',
 				action: 'Place a battery passport on the market',
 				description:
-					'Register a published battery passport in the EU DPP registry under your account\'s own registry access (the upload Battery Regulation Art. 77(10) requires). A legal act for the economic operator. Asynchronous: returns 202 with status placing; read the passport later \u2014 placeOnMarketStatus becomes placed (registrationId) or rejected (registrationRejectionReason; run this again to retry). Refusals return 409 with a code: not_a_battery, not_published, already_placed, operator_id_missing, registry_not_configured, registry_host_not_allowed or registry_not_ready (with findings). After placement the operator and facility identifiers are locked.',
+					'Register a published battery passport through an EN 18222 registry API under your account\'s own registry access. The EU DPP Registry does not accept this path: for it, use Get Registry Address or Create Registry Upload File, register on the Registry website, then Record Registry Result. A legal act for the economic operator. Asynchronous: returns 202 with status placing; read the passport later \u2014 placeOnMarketStatus becomes placed (registrationId) or rejected (registrationRejectionReason; run this again to retry). Refusals return 409 with a code: not_a_battery, not_published, already_placed, operator_id_missing, registry_not_configured, registry_host_not_allowed or registry_not_ready (with findings). After placement the operator and facility identifiers are locked. Paid plans only.',
 				routing: {
 					request: {
 						method: 'POST',
 						url: '=/api/v1/passports/{{$parameter["passportId"]}}/place-on-market',
+					},
+				},
+			},
+			{
+				name: 'Record Registry Result',
+				value: 'recordRegistryResult',
+				action: 'Record a registry result for a passport',
+				description:
+					'Record what the economic operator reports after acting on the EU DPP Registry website. Production: the battery passport is registered, optionally with the date of placing on the market and the Registry\'s registration ID; the operator parties then lock. Acceptance: a test result (passed or failed) with no legal effect. The operator submits on the Registry website; TracePass records the operator\'s statement and does not verify it with the Registry. Returns { passport }. Refusals: 409 not_a_battery, not_published or already_registered; 400 for an invalid, future or pre-publication date. Paid plans only.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/registration',
 					},
 				},
 			},
@@ -325,6 +364,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Undo Registry Result',
+				value: 'undoRegistryResult',
+				action: 'Undo a registry result for a passport',
+				description:
+					'Remove a mistakenly recorded EU DPP Registry result for the chosen environment. This changes only the TracePass record, never the Registry: the operator acts on the Registry website. A production registration made through an EN 18222 registry API is not undone here. Returns { passport }, or 409 nothing_to_undo when there is no such record. Paid plans only.',
+				routing: {
+					request: {
+						method: 'DELETE',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/registration',
+					},
+				},
+			},
+			{
 				name: 'Update Field',
 				value: 'updateField',
 				action: 'Update a passport field',
@@ -367,8 +419,148 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'registryReadiness', 'placeOnMarket', 'getConditionFlags', 'setConditionFlags', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots', 'captureMeasurements', 'getLatestMeasurements', 'getMeasurements'],
+				operation: ['get', 'compliance', 'registryReadiness', 'placeOnMarket', 'getConditionFlags', 'setConditionFlags', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots', 'captureMeasurements', 'getLatestMeasurements', 'getMeasurements', 'getRegistryAddress', 'recordRegistryResult', 'undoRegistryResult'],
 			},
+		},
+	},
+	// ---- EU DPP Registry (website registration) --------------------
+	// The economic operator registers on the Registry website under its own EU
+	// Login; these fields only feed what TracePass prepares and records.
+	{
+		displayName: 'Passport IDs',
+		name: 'registryPassportIds',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0, 65a0f1b2c3d4e5f6a7b8c9d1',
+		description:
+			'The TracePass IDs of 1 to 100 battery passports, comma-separated (an expression returning an array also works)',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['createRegistryUploadFile'] },
+		},
+		routing: {
+			send: {
+				type: 'body',
+				property: 'passportIds',
+				value:
+					'={{ (Array.isArray($value) ? $value : String($value).split(",")).map((id) => String(id).trim()).filter((id) => id) }}',
+			},
+		},
+	},
+	{
+		displayName: 'Environment',
+		name: 'registryEnvironment',
+		type: 'options',
+		required: true,
+		default: 'production',
+		description:
+			'Which EU DPP Registry the operator acted in. Production records the registration; acceptance is a test with no legal effect.',
+		options: [
+			{ name: 'Acceptance (Test)', value: 'acceptance' },
+			{ name: 'Production', value: 'production' },
+		],
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['recordRegistryResult'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'environment' },
+		},
+	},
+	{
+		displayName: 'Environment',
+		name: 'registryUndoEnvironment',
+		type: 'options',
+		required: true,
+		default: 'production',
+		description: 'Which recorded EU DPP Registry result to undo',
+		options: [
+			{ name: 'Acceptance (Test)', value: 'acceptance' },
+			{ name: 'Production', value: 'production' },
+		],
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['undoRegistryResult'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'environment' },
+		},
+	},
+	{
+		displayName: 'Date of Placing on the Market',
+		name: 'registryPlacedOnMarketAt',
+		type: 'dateTime',
+		default: '',
+		description:
+			'Optional. The day the battery was placed on the market, as the operator reports it (sent as YYYY-MM-DD). Defaults to today; may not be in the future or before the passport was first published.',
+		displayOptions: {
+			show: {
+				resource: ['passport'],
+				operation: ['recordRegistryResult'],
+				registryEnvironment: ['production'],
+			},
+		},
+		routing: {
+			send: {
+				type: 'body',
+				property: 'placedOnMarketAt',
+				value: '={{ $value ? String($value).slice(0, 10) : undefined }}',
+			},
+		},
+	},
+	{
+		displayName: 'Registration ID',
+		name: 'registryRegistrationId',
+		type: 'string',
+		default: '',
+		description: 'Optional. The registration identifier the EU DPP Registry showed the operator (up to 200 characters).',
+		displayOptions: {
+			show: {
+				resource: ['passport'],
+				operation: ['recordRegistryResult'],
+				registryEnvironment: ['production'],
+			},
+		},
+		routing: {
+			send: { type: 'body', property: 'registrationId', value: '={{ $value || undefined }}' },
+		},
+	},
+	{
+		displayName: 'Result',
+		name: 'registryResult',
+		type: 'options',
+		required: true,
+		default: 'passed',
+		description: 'The outcome of the test in the acceptance Registry',
+		options: [
+			{ name: 'Failed', value: 'failed' },
+			{ name: 'Passed', value: 'passed' },
+		],
+		displayOptions: {
+			show: {
+				resource: ['passport'],
+				operation: ['recordRegistryResult'],
+				registryEnvironment: ['acceptance'],
+			},
+		},
+		routing: {
+			send: { type: 'body', property: 'result' },
+		},
+	},
+	{
+		displayName: 'Error Code',
+		name: 'registryErrorCode',
+		type: 'string',
+		default: '',
+		description: 'Optional. The error code the acceptance Registry reported for a failed test (up to 100 characters).',
+		displayOptions: {
+			show: {
+				resource: ['passport'],
+				operation: ['recordRegistryResult'],
+				registryEnvironment: ['acceptance'],
+				registryResult: ['failed'],
+			},
+		},
+		routing: {
+			send: { type: 'body', property: 'errorCode', value: '={{ $value || undefined }}' },
 		},
 	},
 	// ---- Snapshot ID (getSnapshot) ---------------------------------
