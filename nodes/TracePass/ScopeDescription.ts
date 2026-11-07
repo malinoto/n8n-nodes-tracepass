@@ -74,7 +74,7 @@ export const scopeOperations: INodeProperties[] = [
 				value: 'getCatalogueReport',
 				action: 'Get scope catalogue report',
 				description:
-					"Get the company-wide scope report: for every product and every distinct fact set among its passports, whether a passport is needed, from when, at which level and under which act. Growth plan and above. One v1 daily read per page. Use the returned nextCursor to page through the full report.",
+					'Get the company-wide scope report: for every product and every distinct fact set among its passports, whether a passport is needed, from when, at which level and under which act. Growth plan and above. One v1 daily read per page. Use the returned nextCursor to page through the full report.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -147,7 +147,8 @@ export const scopeFields: INodeProperties[] = [
 			send: {
 				type: 'body',
 				property: 'facts',
-				value: '={{ Object.keys(JSON.parse($value || "{}")||{}).length ? JSON.parse($value) : undefined }}',
+				value:
+					'={{ Object.keys(JSON.parse($value || "{}")||{}).length ? JSON.parse($value) : undefined }}',
 			},
 		},
 	},
@@ -199,8 +200,7 @@ export const scopeFields: INodeProperties[] = [
 		name: 'scopeLocale',
 		type: 'options',
 		default: 'en',
-		description:
-			'Language for the returned text (questions, labels, disclaimer). Defaults to en.',
+		description: 'Language for the returned text (questions, labels, disclaimer). Defaults to en.',
 		displayOptions: {
 			show: { resource: ['scope'], operation: ['check'] },
 		},
@@ -284,7 +284,8 @@ export const scopeFields: INodeProperties[] = [
 		name: 'catalogueClassification',
 		type: 'options',
 		default: '',
-		description: 'Filter by passport status. &lt;strong&gt;Missing&lt;/strong&gt; — in scope, no passport at all. &lt;strong&gt;Draft only&lt;/strong&gt; — in scope, none published. &lt;strong&gt;Published incomplete&lt;/strong&gt; — published with incomplete warnings. &lt;strong&gt;Published&lt;/strong&gt; — published and complete. &lt;strong&gt;Not required&lt;/strong&gt; — out of scope or no duty yet. &lt;strong&gt;Open questions&lt;/strong&gt; — verdict depends on unanswered facts. &lt;strong&gt;Not covered&lt;/strong&gt; — outside the rules or under review.',
+		description:
+			'Filter by passport status. &lt;strong&gt;Missing&lt;/strong&gt; — in scope, no passport at all. &lt;strong&gt;Draft only&lt;/strong&gt; — in scope, none published. &lt;strong&gt;Published incomplete&lt;/strong&gt; — published with incomplete warnings. &lt;strong&gt;Published&lt;/strong&gt; — published and complete. &lt;strong&gt;Not required&lt;/strong&gt; — out of scope or no duty yet. &lt;strong&gt;Open questions&lt;/strong&gt; — verdict depends on unanswered facts. &lt;strong&gt;Not covered&lt;/strong&gt; — outside the rules or under review.',
 		displayOptions: {
 			show: { resource: ['scope'], operation: ['getCatalogueReport'] },
 		},
@@ -330,7 +331,7 @@ export const scopeFields: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		description:
-			'Pagination cursor from a previous response\'s <code>nextCursor</code> field. Omit for the first page.',
+			"Pagination cursor from a previous response's <code>nextCursor</code> field. Omit for the first page.",
 		displayOptions: {
 			show: { resource: ['scope'], operation: ['getCatalogueReport'] },
 		},

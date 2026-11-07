@@ -51,7 +51,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'captureMeasurements',
 				action: 'Capture battery measurements for a passport',
 				description:
-					'Push over-life measurements from your own equipment into a published battery passport (e.g. state of health, cycle counts; Battery Regulation Annex XIII point 4). The newest per field becomes the current value. Metered against the plan\'s monthly measurement allowance; paid plans keep counting past it at no charge.',
+					"Push over-life measurements from your own equipment into a published battery passport (e.g. state of health, cycle counts; Battery Regulation Annex XIII point 4). The newest per field becomes the current value. Metered against the plan's monthly measurement allowance; paid plans keep counting past it at no charge.",
 				routing: {
 					request: {
 						method: 'POST',
@@ -216,7 +216,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Get QR',
 				value: 'getQr',
 				action: 'Get a passport QR code',
-				description: 'Render the passport QR code. Returns SVG by default; set Format to png or JSON. Optionally apply the company brand colour or an explicit colour. Counts as one passport read against the daily cap.',
+				description:
+					'Render the passport QR code. Returns SVG by default; set Format to png or JSON. Optionally apply the company brand colour or an explicit colour. Counts as one passport read against the daily cap.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -228,7 +229,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Get QR by Serial',
 				value: 'getQrBySerial',
 				action: 'Get a passport QR code by serial',
-				description: 'Render the passport QR code addressed by its serial number. Returns SVG by default; set Format to png or JSON. If the serial is not unique in your account the API returns 409 — set the GTIN field to disambiguate.',
+				description:
+					'Render the passport QR code addressed by its serial number. Returns SVG by default; set Format to png or JSON. If the serial is not unique in your account the API returns 409 — set the GTIN field to disambiguate.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -241,7 +243,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'getRegistryAddress',
 				action: 'Get the registry address for a passport',
 				description:
-					'Prepare the address (UPI) to paste into the EU DPP Registry\'s online form for a published battery passport. The economic operator registers the passport itself on the Registry website under its own EU Login; TracePass prepares the address and records the preparation, and never submits. The first call fixes the address on the passport so the Registry\'s copy keeps resolving. Returns { upi, preparedAt }. Refusals return 409 with a code: not_a_battery, not_published, registered_in_production, registry_not_ready (with findingDetails) or invalid_upi. Paid plans only.',
+					"Prepare the address (UPI) to paste into the EU DPP Registry's online form for a published battery passport. The economic operator registers the passport itself on the Registry website under its own EU Login; TracePass prepares the address and records the preparation, and never submits. The first call fixes the address on the passport so the Registry's copy keeps resolving. Returns { upi, preparedAt }. Refusals return 409 with a code: not_a_battery, not_published, registered_in_production, registry_not_ready (with findingDetails) or invalid_upi. Paid plans only.",
 				routing: {
 					request: {
 						method: 'POST',
@@ -266,7 +268,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Get Snapshots',
 				value: 'getSnapshots',
 				action: 'Get passport snapshots',
-				description: 'Return a paginated list of snapshots for a passport, newest first. A snapshot is written on publish and after every change to a non-draft passport; each entry carries ID, version, reason (e.g. published, field_edit, status_change, baseline), actor, snapshotAt, contentHash, hashValid (re-verified on read), restorable flag, and field count. Set "As Of" to get the version valid at a given moment instead. Counts as one passport read against the daily cap.',
+				description:
+					'Return a paginated list of snapshots for a passport, newest first. A snapshot is written on publish and after every change to a non-draft passport; each entry carries ID, version, reason (e.g. published, field_edit, status_change, baseline), actor, snapshotAt, contentHash, hashValid (re-verified on read), restorable flag, and field count. Set "As Of" to get the version valid at a given moment instead. Counts as one passport read against the daily cap.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -279,7 +282,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'placeOnMarket',
 				action: 'Place a battery passport on the market',
 				description:
-					'Register a published battery passport through an EN 18222 registry API under your account\'s own registry access. The EU DPP Registry does not accept this path: for it, use Get Registry Address or Create Registry Upload File, register on the Registry website, then Record Registry Result. A legal act for the economic operator. Asynchronous: returns 202 with status placing; read the passport later \u2014 placeOnMarketStatus becomes placed (registrationId) or rejected (registrationRejectionReason; run this again to retry). Refusals return 409 with a code: not_a_battery, not_published, already_placed, operator_id_missing, registry_not_configured, registry_host_not_allowed or registry_not_ready (with findings). After placement the operator and facility identifiers are locked. Paid plans only.',
+					"Register a published battery passport through an EN 18222 registry API under your account's own registry access. The EU DPP Registry does not accept this path: for it, use Get Registry Address or Create Registry Upload File, register on the Registry website, then Record Registry Result. A legal act for the economic operator. Asynchronous: returns 202 with status placing; read the passport later \u2014 placeOnMarketStatus becomes placed (registrationId) or rejected (registrationRejectionReason; run this again to retry). Refusals return 409 with a code: not_a_battery, not_published, already_placed, operator_id_missing, registry_not_configured, registry_host_not_allowed or registry_not_ready (with findings). After placement the operator and facility identifiers are locked. Paid plans only.",
 				routing: {
 					request: {
 						method: 'POST',
@@ -292,7 +295,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'recordRegistryResult',
 				action: 'Record a registry result for a passport',
 				description:
-					'Record what the economic operator reports after acting on the EU DPP Registry website. Production: the battery passport is registered, optionally with the date of placing on the market and the Registry\'s registration ID; the operator parties then lock. Acceptance: a test result (passed or failed) with no legal effect. The operator submits on the Registry website; TracePass records the operator\'s statement and does not verify it with the Registry. Returns { passport }. Refusals: 409 not_a_battery, not_published or already_registered; 400 for an invalid, future or pre-publication date. Paid plans only.',
+					"Record what the economic operator reports after acting on the EU DPP Registry website. Production: the battery passport is registered, optionally with the date of placing on the market and the Registry's registration ID; the operator parties then lock. Acceptance: a test result (passed or failed) with no legal effect. The operator submits on the Registry website; TracePass records the operator's statement and does not verify it with the Registry. Returns { passport }. Refusals: 409 not_a_battery, not_published or already_registered; 400 for an invalid, future or pre-publication date. Paid plans only.",
 				routing: {
 					request: {
 						method: 'POST',
@@ -304,7 +307,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Registry Readiness',
 				value: 'registryReadiness',
 				action: 'Check passport registry readiness',
-				description: 'Check whether a passport would pass the EU DPP Registry\'s formal submission gate — returns { ready, findings[] } covering mandatory-field presence, correct formatting, a resolvable public link, item-level granularity (a serial number), and a well-formed commodity code where the category carries one, and, for EV, LMT and industrial (over 2 kWh) batteries, conformance to the Commission\'s battery data model that the Registry validates against (REG-READY-SEMANTIC). This is the registry\'s mechanical pre-submission check, not the substantive compliance verdict. Battery passports only.',
+				description:
+					"Check whether a passport would pass the EU DPP Registry's formal submission gate — returns { ready, findings[] } covering mandatory-field presence, correct formatting, a resolvable public link, item-level granularity (a serial number), and a well-formed commodity code where the category carries one, and, for EV, LMT and industrial (over 2 kWh) batteries, conformance to the Commission's battery data model that the Registry validates against (REG-READY-SEMANTIC). This is the registry's mechanical pre-submission check, not the substantive compliance verdict. Battery passports only.",
 				routing: {
 					request: {
 						method: 'GET',
@@ -419,7 +423,26 @@ export const passportFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['passport'],
-				operation: ['get', 'compliance', 'registryReadiness', 'placeOnMarket', 'getConditionFlags', 'setConditionFlags', 'updateField', 'suspend', 'archive', 'getQr', 'getSnapshot', 'getSnapshots', 'captureMeasurements', 'getLatestMeasurements', 'getMeasurements', 'getRegistryAddress', 'recordRegistryResult', 'undoRegistryResult'],
+				operation: [
+					'get',
+					'compliance',
+					'registryReadiness',
+					'placeOnMarket',
+					'getConditionFlags',
+					'setConditionFlags',
+					'updateField',
+					'suspend',
+					'archive',
+					'getQr',
+					'getSnapshot',
+					'getSnapshots',
+					'captureMeasurements',
+					'getLatestMeasurements',
+					'getMeasurements',
+					'getRegistryAddress',
+					'recordRegistryResult',
+					'undoRegistryResult',
+				],
 			},
 		},
 	},
@@ -511,7 +534,8 @@ export const passportFields: INodeProperties[] = [
 		name: 'registryRegistrationId',
 		type: 'string',
 		default: '',
-		description: 'Optional. The registration identifier the EU DPP Registry showed the operator (up to 200 characters).',
+		description:
+			'Optional. The registration identifier the EU DPP Registry showed the operator (up to 200 characters).',
 		displayOptions: {
 			show: {
 				resource: ['passport'],
@@ -550,7 +574,8 @@ export const passportFields: INodeProperties[] = [
 		name: 'registryErrorCode',
 		type: 'string',
 		default: '',
-		description: 'Optional. The error code the acceptance Registry reported for a failed test (up to 100 characters).',
+		description:
+			'Optional. The error code the acceptance Registry reported for a failed test (up to 100 characters).',
 		displayOptions: {
 			show: {
 				resource: ['passport'],
@@ -613,7 +638,7 @@ export const passportFields: INodeProperties[] = [
 		type: 'dateTime',
 		default: '',
 		description:
-			'Optional. Return the single snapshot valid at this moment (the full record plus validFrom and validUntil) instead of the list. Returns 404 when the moment predates the passport\'s first snapshot.',
+			"Optional. Return the single snapshot valid at this moment (the full record plus validFrom and validUntil) instead of the list. Returns 404 when the moment predates the passport's first snapshot.",
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['getSnapshots'] },
 		},
@@ -631,7 +656,19 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'e.g. SN-2026-00042',
 		description: 'The product unit serial number',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial', 'captureMeasurementsBySerial'] },
+			show: {
+				resource: ['passport'],
+				operation: [
+					'getBySerial',
+					'getConditionFlagsBySerial',
+					'setConditionFlagsBySerial',
+					'archiveBySerial',
+					'suspendBySerial',
+					'updateFieldBySerial',
+					'getQrBySerial',
+					'captureMeasurementsBySerial',
+				],
+			},
 		},
 	},
 	{
@@ -643,7 +680,19 @@ export const passportFields: INodeProperties[] = [
 		description:
 			'Optional. A serial is unique only within a GTIN, so if the same serial exists under two GTINs in your account a serial-only call returns 409. Set the GTIN here to resolve the passport exactly.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getBySerial', 'getConditionFlagsBySerial', 'setConditionFlagsBySerial', 'archiveBySerial', 'suspendBySerial', 'updateFieldBySerial', 'getQrBySerial', 'captureMeasurementsBySerial'] },
+			show: {
+				resource: ['passport'],
+				operation: [
+					'getBySerial',
+					'getConditionFlagsBySerial',
+					'setConditionFlagsBySerial',
+					'archiveBySerial',
+					'suspendBySerial',
+					'updateFieldBySerial',
+					'getQrBySerial',
+					'captureMeasurementsBySerial',
+				],
+			},
 		},
 		routing: {
 			send: { type: 'query', property: 'gtin' },
@@ -662,8 +711,16 @@ export const passportFields: INodeProperties[] = [
 			'Required for battery passports: why the passport ends. A battery passport ends only when the battery has been recycled, so the choices are recycled, never placed on the market or put into service, or a duplicate or erroneous record.',
 		options: [
 			{ name: '(None)', value: '' },
-			{ name: 'Duplicate or Error', value: 'duplicate_or_error', description: 'A duplicate or erroneous record' },
-			{ name: 'Never Placed', value: 'never_placed', description: 'Never placed on the market or put into service' },
+			{
+				name: 'Duplicate or Error',
+				value: 'duplicate_or_error',
+				description: 'A duplicate or erroneous record',
+			},
+			{
+				name: 'Never Placed',
+				value: 'never_placed',
+				description: 'Never placed on the market or put into service',
+			},
 			{ name: 'Recycled', value: 'recycled', description: 'The battery has been recycled' },
 		],
 		displayOptions: {
@@ -818,7 +875,8 @@ export const passportFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		placeholder: 'e.g. 04012345678901',
-		description: 'The GS1 GTIN: 14 digits, or a 13-digit EAN (padded to 14 with a leading 0). Stored and returned as GTIN-14.',
+		description:
+			'The GS1 GTIN: 14 digits, or a 13-digit EAN (padded to 14 with a leading 0). Stored and returned as GTIN-14.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['gs1'] },
 		},
@@ -894,7 +952,8 @@ export const passportFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		placeholder: 'e.g. https://product.example.com/item/42',
-		description: 'IEC 61406 Identification Link — must be an https URI. Not valid for battery passports.',
+		description:
+			'IEC 61406 Identification Link — must be an https URI. Not valid for battery passports.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['iec61406'] },
 		},
@@ -941,7 +1000,8 @@ export const passportFields: INodeProperties[] = [
 		required: true,
 		default: '',
 		placeholder: 'e.g. 10.1234/example.product',
-		description: 'ISO 26324 Digital Object Identifier in bare form: 10.{registrant}/{suffix} (omit the https://doi.org/ prefix). Not valid for battery passports.',
+		description:
+			'ISO 26324 Digital Object Identifier in bare form: 10.{registrant}/{suffix} (omit the https://doi.org/ prefix). Not valid for battery passports.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['doi'] },
 		},
@@ -958,7 +1018,8 @@ export const passportFields: INodeProperties[] = [
 		type: 'options',
 		required: true,
 		default: 'model',
-		description: 'Whether the DOI identifies the product model, a production batch, or an individual item (EN 18219 §5.6.2(b)). Required for DOI identifiers.',
+		description:
+			'Whether the DOI identifies the product model, a production batch, or an individual item (EN 18219 §5.6.2(b)). Required for DOI identifiers.',
 		displayOptions: {
 			show: { resource: ['passport'], operation: ['create'], identifierScheme: ['doi'] },
 		},
@@ -1043,12 +1104,13 @@ export const passportFields: INodeProperties[] = [
 		type: 'options',
 		default: 'manual',
 		description:
-			'Where the value came from. Manual is your own statement and is written with your credential\'s rights; AI Suggested goes to the review queue for a person to approve.',
+			"Where the value came from. Manual is your own statement and is written with your credential's rights; AI Suggested goes to the review queue for a person to approve.",
 		options: [
 			{
 				name: 'AI Suggested',
 				value: 'ai_suggested',
-				description: 'Found or inferred by an AI step in your workflow. Lands in review; refused on fields only the economic operator may state or that must be measured.',
+				description:
+					'Found or inferred by an AI step in your workflow. Lands in review; refused on fields only the economic operator may state or that must be measured.',
 			},
 			{
 				name: 'Manual',
@@ -1073,7 +1135,10 @@ export const passportFields: INodeProperties[] = [
 		description:
 			'A JSON object mapping flag keys to true, false, or null. true = flag is set; false = flag is explicitly cleared; null = remove the flag entry. Example: { "hasBMS": true, "rechargeable": false, "externalStorageOnly": null }. Flag keys are category-specific — see the passport category template for valid keys.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['setConditionFlags', 'setConditionFlagsBySerial'] },
+			show: {
+				resource: ['passport'],
+				operation: ['setConditionFlags', 'setConditionFlagsBySerial'],
+			},
 		},
 		routing: {
 			// No `property` → n8n spread-merges the parsed JSON into the root request body,
@@ -1087,11 +1152,15 @@ export const passportFields: INodeProperties[] = [
 		name: 'measurementsBody',
 		type: 'json',
 		required: true,
-		default: '=[\n  { "fieldKey": "stateOfHealth", "value": 96.4, "measuredAt": "2027-03-01T06:00:00Z", "externalId": "bms-7781-2027-03-01" }\n]',
+		default:
+			'=[\n  { "fieldKey": "stateOfHealth", "value": 96.4, "measuredAt": "2027-03-01T06:00:00Z", "externalId": "bms-7781-2027-03-01" }\n]',
 		description:
 			'An array of up to 500 measurements: { fieldKey, value, measuredAt (ISO 8601), externalId?, unit? }. fieldKey is a battery use-data field (Annex XIII point 4), e.g. stateOfHealth or numberOfFullEquivalentChargingCycles. batteryStatus is not a measurement. externalId makes a measurement idempotent.',
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['captureMeasurements', 'captureMeasurementsBySerial'] },
+			show: {
+				resource: ['passport'],
+				operation: ['captureMeasurements', 'captureMeasurementsBySerial'],
+			},
 		},
 		routing: {
 			send: { type: 'body', property: 'measurements' },
@@ -1167,7 +1236,7 @@ export const passportFields: INodeProperties[] = [
 				name: 'productId',
 				type: 'string',
 				default: '',
-				description: 'Filter to one product\'s passports',
+				description: "Filter to one product's passports",
 				routing: { send: { type: 'query', property: 'productId' } },
 			},
 			{

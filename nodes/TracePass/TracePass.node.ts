@@ -119,7 +119,8 @@ export class TracePass implements INodeType {
 					{
 						name: 'Scope',
 						value: 'scope',
-						description: 'Check whether a product type needs a DPP and get the company-wide scope catalogue report',
+						description:
+							'Check whether a product type needs a DPP and get the company-wide scope catalogue report',
 					},
 					{
 						name: 'Template',

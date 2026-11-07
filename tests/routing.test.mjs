@@ -112,9 +112,7 @@ describe('TracePass node — declarative routing', () => {
 
 	it('every routed URL targets the v1 API', () => {
 		for (const r of routes) {
-			expect(r.url.replace(/^=/, ''), `${r.owner} routes outside /api/v1`).toMatch(
-				/^\/api\/v1\//,
-			);
+			expect(r.url.replace(/^=/, ''), `${r.owner} routes outside /api/v1`).toMatch(/^\/api\/v1\//);
 		}
 	});
 
@@ -172,7 +170,10 @@ describe('TracePass node — description integrity', () => {
 		// Both are `required: true`; only displayOptions stop n8n demanding
 		// both at once. If that gating is lost the node becomes unusable.
 		for (const cred of d.credentials ?? []) {
-			expect(cred.displayOptions?.show?.authentication, `${cred.name} is not auth-gated`).toBeTruthy();
+			expect(
+				cred.displayOptions?.show?.authentication,
+				`${cred.name} is not auth-gated`,
+			).toBeTruthy();
 		}
 	});
 
@@ -239,7 +240,9 @@ describe('TracePass passport Create — EN 18219 identifier schemes', () => {
 			const send = opt.routing?.send;
 			expect(send?.type, `${opt.value} routing.send.type`).toBe('body');
 			expect(send?.property, `${opt.value} routing.send.property`).toBe('identifier.scheme');
-			expect(send?.value, `${opt.value} routing.send.value should equal the scheme`).toBe(opt.value);
+			expect(send?.value, `${opt.value} routing.send.value should equal the scheme`).toBe(
+				opt.value,
+			);
 		}
 	});
 
@@ -289,7 +292,6 @@ describe('TracePass passport Create — EN 18219 identifier schemes', () => {
 			}
 		});
 	}
-
 });
 
 describe('TracePass passport — condition flags operations', () => {
@@ -307,7 +309,9 @@ describe('TracePass passport — condition flags operations', () => {
 		const r = routes.find((r) => r.owner === 'operation:getConditionFlagsBySerial');
 		expect(r, 'getConditionFlagsBySerial route missing').toBeTruthy();
 		expect(r.method).toBe('GET');
-		expect(r.url).toBe('=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags');
+		expect(r.url).toBe(
+			'=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags',
+		);
 	});
 
 	it('setConditionFlags routes to the correct PATCH endpoint', () => {
@@ -321,7 +325,9 @@ describe('TracePass passport — condition flags operations', () => {
 		const r = routes.find((r) => r.owner === 'operation:setConditionFlagsBySerial');
 		expect(r, 'setConditionFlagsBySerial route missing').toBeTruthy();
 		expect(r.method).toBe('PATCH');
-		expect(r.url).toBe('=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags');
+		expect(r.url).toBe(
+			'=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags',
+		);
 	});
 
 	it('passportId field is shown for getConditionFlags and setConditionFlags', () => {
@@ -333,7 +339,8 @@ describe('TracePass passport — condition flags operations', () => {
 
 	it('serialNumber field is shown for getConditionFlagsBySerial and setConditionFlagsBySerial', () => {
 		const f = props.find(
-			(p) => p.name === 'serialNumber' && p.displayOptions?.show?.operation?.includes?.('getBySerial'),
+			(p) =>
+				p.name === 'serialNumber' && p.displayOptions?.show?.operation?.includes?.('getBySerial'),
 		);
 		expect(f, 'serialNumber field missing').toBeTruthy();
 		expect(f.displayOptions?.show?.operation).toContain('getConditionFlagsBySerial');
@@ -367,7 +374,8 @@ describe('TracePass passport — Data Matrix and point-in-time snapshots', () =>
 		expect(sym.routing.send).toEqual({ type: 'query', property: 'symbology' });
 		expect(sym.options.map((o) => o.value).sort()).toEqual(['datamatrix', 'qr']);
 		// The platform checkout is a sibling locally, absent in CI (same rule as above).
-		if (existsSync(PLATFORM_V1)) expect(platformRoute('passports', '[id]', 'qr')).toContain('"symbology"');
+		if (existsSync(PLATFORM_V1))
+			expect(platformRoute('passports', '[id]', 'qr')).toContain('"symbology"');
 	});
 
 	it('Get Snapshots sends `at` from "As Of", and the platform snapshots route reads it', () => {
@@ -376,7 +384,8 @@ describe('TracePass passport — Data Matrix and point-in-time snapshots', () =>
 		expect(f.displayOptions.show.operation).toEqual(['getSnapshots']);
 		expect(f.routing.send.type).toBe('query');
 		expect(f.routing.send.property).toBe('at');
-		if (existsSync(PLATFORM_V1)) expect(platformRoute('passports', '[id]', 'snapshots')).toContain('searchParams.get("at")');
+		if (existsSync(PLATFORM_V1))
+			expect(platformRoute('passports', '[id]', 'snapshots')).toContain('searchParams.get("at")');
 	});
 });
 
@@ -401,11 +410,16 @@ describe('TracePass passport Create — battery lineage (Art. 77(7))', () => {
 
 describe('TracePass passport — battery measurements (living record)', () => {
 	const props = new TracePass().description.properties;
-	const ops = props.find((p) => p.name === 'operation' && p.displayOptions?.show?.resource?.includes('passport')).options;
+	const ops = props.find(
+		(p) => p.name === 'operation' && p.displayOptions?.show?.resource?.includes('passport'),
+	).options;
 	const byValue = (v) => ops.find((o) => o.value === v);
 
 	it('routes capture, history and latest to the measurements endpoints', () => {
-		expect(byValue('captureMeasurements').routing.request).toMatchObject({ method: 'POST', url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements' });
+		expect(byValue('captureMeasurements').routing.request).toMatchObject({
+			method: 'POST',
+			url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements',
+		});
 		expect(byValue('captureMeasurementsBySerial').routing.request.url).toContain('/by-serial/');
 		expect(byValue('getMeasurements').routing.request).toMatchObject({ method: 'GET' });
 		expect(byValue('getLatestMeasurements').routing.request.url).toMatch(/\/measurements\/latest$/);
@@ -414,12 +428,16 @@ describe('TracePass passport — battery measurements (living record)', () => {
 	it('sends the measurements array as the body property', () => {
 		const body = props.find((p) => p.name === 'measurementsBody');
 		expect(body.routing.send).toEqual({ type: 'body', property: 'measurements' });
-		expect(body.displayOptions.show.operation).toEqual(['captureMeasurements', 'captureMeasurementsBySerial']);
+		expect(body.displayOptions.show.operation).toEqual([
+			'captureMeasurements',
+			'captureMeasurementsBySerial',
+		]);
 	});
 
 	it('shows the passport id / serial inputs the new operations need', () => {
 		const id = props.find((p) => p.name === 'passportId');
-		for (const op of ['captureMeasurements', 'getLatestMeasurements', 'getMeasurements']) expect(id.displayOptions.show.operation).toContain(op);
+		for (const op of ['captureMeasurements', 'getLatestMeasurements', 'getMeasurements'])
+			expect(id.displayOptions.show.operation).toContain(op);
 		const serial = props.find((p) => p.name === 'serialNumber');
 		expect(serial.displayOptions.show.operation).toContain('captureMeasurementsBySerial');
 	});
@@ -618,7 +636,16 @@ describe('TracePass passport — Update Field source', () => {
 	});
 
 	it('offers only origins the platform accepts from API callers', () => {
-		const file = join(HERE, '..', '..', 'tracepass-platform', 'src', 'lib', 'passports', 'v1-claimable-sources.ts');
+		const file = join(
+			HERE,
+			'..',
+			'..',
+			'tracepass-platform',
+			'src',
+			'lib',
+			'passports',
+			'v1-claimable-sources.ts',
+		);
 		if (!existsSync(file)) return;
 		const text = readFileSync(file, 'utf8');
 		for (const o of source.options) expect(text, o.value).toContain(`"${o.value}"`);
@@ -633,7 +660,9 @@ describe('TracePass passport — create sends no overage consent', () => {
 	const createOps = ['create', 'createBatch'];
 	const onCreate = properties.filter((p) => {
 		const show = p.displayOptions?.show;
-		return show?.resource?.includes('passport') && show?.operation?.some((o) => createOps.includes(o));
+		return (
+			show?.resource?.includes('passport') && show?.operation?.some((o) => createOps.includes(o))
+		);
 	});
 
 	it('has create properties to check', () => {
@@ -663,23 +692,42 @@ describe('TracePass passport — archive reason (battery end of passport)', () =
 	});
 
 	it('is sent as body.reason, and omitted when left empty', () => {
-		expect(reason.routing.send).toEqual({ type: 'body', property: 'reason', value: '={{ $value || undefined }}' });
+		expect(reason.routing.send).toEqual({
+			type: 'body',
+			property: 'reason',
+			value: '={{ $value || undefined }}',
+		});
 		expect(reason.default).toBe('');
 		expect(reason.required).toBeFalsy();
 	});
 
 	it('offers exactly the three platform reasons plus empty', () => {
-		expect(reason.options.map((o) => o.value).sort()).toEqual(['', 'duplicate_or_error', 'never_placed', 'recycled']);
+		expect(reason.options.map((o) => o.value).sort()).toEqual([
+			'',
+			'duplicate_or_error',
+			'never_placed',
+			'recycled',
+		]);
 	});
 
 	it('offers only reasons the platform accepts, and both archive routes read body.reason', () => {
 		const types = platformFile('src', 'types', 'index.ts');
 		if (!existsSync(types)) return;
-		const line = readFileSync(types, 'utf8').split('\n').find((l) => l.includes('export const DELETION_REASONS'));
+		const line = readFileSync(types, 'utf8')
+			.split('\n')
+			.find((l) => l.includes('export const DELETION_REASONS'));
 		expect(line, 'DELETION_REASONS not found in the platform types').toBeTruthy();
 		const platformReasons = [...line.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
-		expect(reason.options.map((o) => o.value).filter(Boolean).sort()).toEqual(platformReasons);
-		for (const route of [['passports', '[id]', 'archive'], ['passports', 'by-serial', '[serial]', 'archive']]) {
+		expect(
+			reason.options
+				.map((o) => o.value)
+				.filter(Boolean)
+				.sort(),
+		).toEqual(platformReasons);
+		for (const route of [
+			['passports', '[id]', 'archive'],
+			['passports', 'by-serial', '[serial]', 'archive'],
+		]) {
 			const text = readFileSync(join(PLATFORM_V1, ...route, 'route.ts'), 'utf8');
 			expect(text, route.join('/')).toContain('"reason" in body');
 		}
@@ -700,7 +748,9 @@ describe('TracePass passport — Place on Market (battery EU registry entry)', (
 	it('is a POST to the place-on-market route of the chosen passport', () => {
 		expect(op, 'placeOnMarket operation missing').toBeTruthy();
 		expect(op.routing.request.method).toBe('POST');
-		expect(op.routing.request.url).toBe('=/api/v1/passports/{{$parameter["passportId"]}}/place-on-market');
+		expect(op.routing.request.url).toBe(
+			'=/api/v1/passports/{{$parameter["passportId"]}}/place-on-market',
+		);
 	});
 
 	it('shows the Passport ID field and sends no other parameter', () => {
@@ -712,7 +762,10 @@ describe('TracePass passport — Place on Market (battery EU registry entry)', (
 		const pure = platformFile('src', 'lib', 'passports', 'place-on-market-pure.ts');
 		if (!existsSync(pure)) return;
 		const src = readFileSync(pure, 'utf8');
-		const union = src.slice(src.indexOf('export type PlaceOnMarketGateCode'), src.indexOf(';', src.indexOf('export type PlaceOnMarketGateCode')));
+		const union = src.slice(
+			src.indexOf('export type PlaceOnMarketGateCode'),
+			src.indexOf(';', src.indexOf('export type PlaceOnMarketGateCode')),
+		);
 		const codes = [...union.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).filter((c) => c !== 'ok');
 		// The floor guards the parser (a broken slice would find none and pass
 		// vacuously); the loop below is what checks the description. A new gate
