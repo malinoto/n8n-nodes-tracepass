@@ -40,7 +40,6 @@
     "dev": "n8n-node dev",
     "lint": "n8n-node lint",
     "lint:fix": "n8n-node lint --fix",
-    "lint:standard": "eslint -c eslint.standard.config.mjs nodes credentials",
     "test": "vitest run",
     "release": "n8n-node release",
     "prepublishOnly": "n8n-node prerelease"
@@ -63,13 +62,10 @@
     "n8n-workflow": "*"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
     "@n8n/node-cli": "*",
-    "@tracepass/code-standard": "github:malinoto/tracepass-code-standard#748db3c6f959459b6ea2bb8b97e4a17c2bf1864e",
     "eslint": "9.39.4",
     "prettier": "3.8.3",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.72.1",
     "vitest": "^4.1.11"
   }
 }

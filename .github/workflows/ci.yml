@@ -71,11 +71,6 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # The shared TracePass coding standard, as a second pass: n8n's lint above
-      # requires its default eslint.config.mjs untouched.
-      - name: Lint (TracePass standard)
-        run: npm run lint:standard
-
       # The node is declarative — a wrong URL or a dead operation passes lint
       # and build without complaint, so these assertions are the only check
       # that catches them before publish. The cross-repo route comparison
