@@ -65,10 +65,14 @@ is missing, say so and ask; don't hunt the machine for one.
 ```bash
 npm run build      # n8n-node build — compiles TS to dist/, copies icons
 npm run lint       # n8n-node lint — n8n node-spec linter (naming, display rules)
+npm run lint:standard  # the shared @tracepass/code-standard ESLint rules
 npm test           # vitest — routing + description integrity
 ```
 
-All three must pass before committing a node change.
+All four must pass before committing a node change. `eslint.config.mjs` must stay
+n8n's default (its lint fails in strict mode otherwise, which n8n Cloud needs), so
+the shared standard runs as the separate `lint:standard` pass with
+`eslint.standard.config.mjs`. `tsconfig.json` extends the standard's TypeScript base.
 
 **`npm test` is the only thing that can catch a wrong URL.** The node is
 declarative: the URLs are *data*, so a route renamed on the platform passes lint
