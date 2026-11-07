@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-tracepass",
   "version": "1.16.0",
-  "description": "n8n community node for TracePass — automate EU Digital Product Passport workflows: products, passports, EPCIS supply-chain events.",
+  "description": "n8n community node for TracePass \u2014 automate EU Digital Product Passport workflows: products, passports, EPCIS supply-chain events.",
   "keywords": [
     "n8n-community-node-package",
     "n8n",
@@ -40,10 +40,14 @@
     "dev": "n8n-node dev",
     "lint": "n8n-node lint",
     "lint:fix": "n8n-node lint --fix",
-    "lint:standard": "eslint -c eslint.standard.config.mjs nodes credentials",
+    "lint:standard": "eslint -c eslint.standard.config.mjs nodes credentials tests",
     "test": "vitest run",
     "release": "n8n-node release",
-    "prepublishOnly": "n8n-node prerelease"
+    "prepublishOnly": "n8n-node prerelease",
+    "typecheck": "tsc --noEmit",
+    "format:check": "prettier --check \"**/*.{ts,js,mjs,cjs}\"",
+    "check": "npm run lint && npm run lint:standard && npm run format:check && npm run typecheck && npm test",
+    "hooks:install": "node node_modules/@tracepass/code-standard/git-hooks/install.mjs"
   },
   "files": [
     "dist"
@@ -65,7 +69,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@n8n/node-cli": "*",
-    "@tracepass/code-standard": "github:malinoto/tracepass-code-standard#748db3c6f959459b6ea2bb8b97e4a17c2bf1864e",
+    "@tracepass/code-standard": "file:../tracepass-code-standard",
     "eslint": "9.39.4",
     "prettier": "3.8.3",
     "typescript": "5.9.3",
