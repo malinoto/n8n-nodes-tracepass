@@ -64,15 +64,21 @@ is missing, say so and ask; don't hunt the machine for one.
 
 ```bash
 npm run build      # n8n-node build — compiles TS to dist/, copies icons
+npm run check      # everything below, in order; must pass before a merge or push to master
 npm run lint       # n8n-node lint — n8n node-spec linter (naming, display rules)
-npm run lint:standard  # the shared @tracepass/code-standard ESLint rules
+npm run lint:standard  # the shared @tracepass/code-standard ESLint rules (nodes, credentials, tests)
+npm run format:check   # Prettier with n8n's own settings (.prettierrc.js)
+npm run typecheck  # tsc --noEmit
 npm test           # vitest — routing + description integrity
+npm run hooks:install  # once per clone: the pre-push hook that runs `check` on pushes to master
 ```
 
-All four must pass before committing a node change. `eslint.config.mjs` must stay
-n8n's default (its lint fails in strict mode otherwise, which n8n Cloud needs), so
-the shared standard runs as the separate `lint:standard` pass with
-`eslint.standard.config.mjs`. `tsconfig.json` extends the standard's TypeScript base.
+`eslint.config.mjs` must stay n8n's default (its lint fails in strict mode otherwise,
+which n8n Cloud needs), so the shared standard runs as the separate `lint:standard`
+pass with `eslint.standard.config.mjs`. `tsconfig.json` extends the standard's
+TypeScript base. n8n's lint forbids lifecycle scripts such as `prepare` in a community
+node, so the pre-push hook is installed by hand with `npm run hooks:install`, not on
+`npm install` as in the other repos.
 
 **`npm test` is the only thing that can catch a wrong URL.** The node is
 declarative: the URLs are *data*, so a route renamed on the platform passes lint

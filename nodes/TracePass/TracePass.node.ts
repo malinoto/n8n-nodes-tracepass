@@ -24,7 +24,7 @@ import { templateOperations, templateFields } from './TemplateDescription';
  *   - Template  — DPP category field schemas (read-only reference)
  */
 export class TracePass implements INodeType {
-	description: INodeTypeDescription = {
+	public description: INodeTypeDescription = {
 		displayName: 'TracePass',
 		name: 'tracePass',
 		icon: { light: 'file:../../icons/tracepass.svg', dark: 'file:../../icons/tracepass.dark.svg' },

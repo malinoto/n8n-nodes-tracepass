@@ -25,7 +25,11 @@ const PLATFORM_V1 = process.env.TRACEPASS_PLATFORM_PATH
 	? join(process.env.TRACEPASS_PLATFORM_PATH, 'src', 'app', 'api', 'v1')
 	: join(HERE, '..', '..', 'tracepass-platform', 'src', 'app', 'api', 'v1');
 
-/** Every `routing` block reachable from the node's properties. */
+/**
+ * Every `routing` block reachable from the node's properties.
+ * @returns {Array<{ method: string, url: string, owner: string }>} One entry per operation that
+ *   calls the API, with the property (and option) it belongs to.
+ */
 function collectRoutes() {
 	const found = [];
 
@@ -74,6 +78,8 @@ function collectRoutes() {
  * which on disk is a `[param]` segment. Parameter NAMES differ by design
  * (`passportId` vs `[id]`), so every substitution collapses to a single
  * wildcard and only the route SHAPE is compared.
+ * @param {string} url The node's request URL expression.
+ * @returns {string} The route shape, e.g. `passports/[id]/qr`.
  */
 function toRouteShape(url) {
 	return url
@@ -83,7 +89,10 @@ function toRouteShape(url) {
 		.replace(/\/$/, '');
 }
 
-/** The platform's real v1 routes, in the same wildcard shape. */
+/**
+ * The platform's real v1 routes, in the same wildcard shape.
+ * @returns {Set<string>} One shape per `route.ts` under the platform's v1 folder.
+ */
 function platformRouteShapes() {
 	const shapes = new Set();
 	const walk = (dir, segments) => {

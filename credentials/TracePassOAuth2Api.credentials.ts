@@ -22,17 +22,20 @@ import type { ICredentialType, Icon, INodeProperties } from 'n8n-workflow';
  * you prefer, or leave the secret blank for a public client).
  */
 export class TracePassOAuth2Api implements ICredentialType {
-	name = 'tracePassOAuth2Api';
+	public name = 'tracePassOAuth2Api';
 
-	extends = ['oAuth2Api'];
+	public extends = ['oAuth2Api'];
 
-	displayName = 'TracePass OAuth2 API';
+	public displayName = 'TracePass OAuth2 API';
 
-	documentationUrl = 'https://www.tracepass.eu/docs/authentication';
+	public documentationUrl = 'https://www.tracepass.eu/docs/authentication';
 
-	icon: Icon = { light: 'file:../icons/tracepass.svg', dark: 'file:../icons/tracepass.dark.svg' };
+	public icon: Icon = {
+		light: 'file:../icons/tracepass.svg',
+		dark: 'file:../icons/tracepass.dark.svg',
+	};
 
-	properties: INodeProperties[] = [
+	public properties: INodeProperties[] = [
 		{
 			displayName: 'Grant Type',
 			name: 'grantType',

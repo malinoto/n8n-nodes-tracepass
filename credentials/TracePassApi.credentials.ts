@@ -18,15 +18,18 @@ import type {
  * builds a workflow on a bad key.
  */
 export class TracePassApi implements ICredentialType {
-	name = 'tracePassApi';
+	public name = 'tracePassApi';
 
-	displayName = 'TracePass API';
+	public displayName = 'TracePass API';
 
-	documentationUrl = 'https://www.tracepass.eu/docs/authentication';
+	public documentationUrl = 'https://www.tracepass.eu/docs/authentication';
 
-	icon: Icon = { light: 'file:../icons/tracepass.svg', dark: 'file:../icons/tracepass.dark.svg' };
+	public icon: Icon = {
+		light: 'file:../icons/tracepass.svg',
+		dark: 'file:../icons/tracepass.dark.svg',
+	};
 
-	properties: INodeProperties[] = [
+	public properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
 			name: 'apiKey',
@@ -49,7 +52,7 @@ export class TracePassApi implements ICredentialType {
 		},
 	];
 
-	authenticate: IAuthenticateGeneric = {
+	public authenticate: IAuthenticateGeneric = {
 		type: 'generic',
 		properties: {
 			headers: {
@@ -58,7 +61,7 @@ export class TracePassApi implements ICredentialType {
 		},
 	};
 
-	test: ICredentialTestRequest = {
+	public test: ICredentialTestRequest = {
 		request: {
 			baseURL: '={{$credentials.baseUrl}}',
 			url: '/api/v1/products',
