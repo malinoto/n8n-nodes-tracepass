@@ -722,11 +722,13 @@ describe('TracePass passport — archive reason (battery end of passport)', () =
 	it('offers only reasons the platform accepts, and both archive routes read body.reason', () => {
 		const types = platformFile('src', 'types', 'index.ts');
 		if (!existsSync(types)) return;
-		const line = readFileSync(types, 'utf8')
-			.split('\n')
-			.find((l) => l.includes('export const DELETION_REASONS'));
-		expect(line, 'DELETION_REASONS not found in the platform types').toBeTruthy();
-		const platformReasons = [...line.matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
+		// The whole array literal, on one line or spread over several (Prettier wraps it).
+		const declaration = /export const DELETION_REASONS\b[^=]*=\s*\[([^\]]*)\]/.exec(
+			readFileSync(types, 'utf8'),
+		);
+		expect(declaration, 'DELETION_REASONS not found in the platform types').toBeTruthy();
+		const platformReasons = [...declaration[1].matchAll(/"([a-z_]+)"/g)].map((m) => m[1]).sort();
+		expect(platformReasons.length, 'no reasons parsed from DELETION_REASONS').toBeGreaterThan(0);
 		expect(
 			reason.options
 				.map((o) => o.value)
