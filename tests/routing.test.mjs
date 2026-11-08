@@ -1007,3 +1007,38 @@ describe('TracePass scope — catalogue runs', () => {
 		expect(forStart).toEqual([]);
 	});
 });
+
+/**
+ * The marketing site's n8n docs page lists each resource's operations
+ * verbatim (`PRODUCT_OPS`, `PASSPORT_OPS`, … in its n8n prose file). Nothing
+ * generates those strings, so this compares them with the node's own option
+ * names. Self-skips when the site is not a sibling checkout.
+ */
+describe('TracePass node — the docs page lists the same operations', () => {
+	const siteDir = process.env.TRACEPASS_SITE_DIR ?? join(HERE, '..', '..', 'tracepass');
+	const prose = join(siteDir, 'src', 'data', 'api-docs', 'prose', 'n8n.tsx');
+	const LISTS = {
+		product: 'PRODUCT_OPS',
+		passport: 'PASSPORT_OPS',
+		epcis: 'EPCIS_OPS',
+		template: 'TEMPLATE_OPS',
+		scope: 'SCOPE_OPS',
+	};
+
+	it('each resource list on the page equals the node operation names, in order', () => {
+		if (!existsSync(prose)) return;
+		const text = readFileSync(prose, 'utf8');
+		const operations = new TracePass().description.properties.filter((p) => p.name === 'operation');
+		expect(operations.map((p) => p.displayOptions.show.resource[0]).sort()).toEqual(
+			Object.keys(LISTS).sort(),
+		);
+		for (const property of operations) {
+			const resource = property.displayOptions.show.resource[0];
+			const declaration = new RegExp(`const ${LISTS[resource]} =\\s*"([^"]*)"`).exec(text);
+			expect(declaration, `${LISTS[resource]} not found in the docs page`).toBeTruthy();
+			expect(declaration[1].split(' · '), `${LISTS[resource]} on the docs page`).toEqual(
+				property.options.map((o) => o.name),
+			);
+		}
+	});
+});

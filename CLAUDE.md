@@ -149,7 +149,10 @@ Operation `name`/`value` strings (e.g. `Create`, `Create Batch`, `Get by Serial`
 are literal node-UI identifiers. They are NOT localised and must match what the
 marketing site's API docs list verbatim — `PASSPORT_OPS` in the marketing repo's
 `src/data/api-docs/prose/n8n.tsx` mirrors this list. When you add/rename an
-operation here, update that constant in the marketing repo in lockstep.
+operation here, update that constant in the marketing repo in lockstep. The routing
+test compares every resource's list there (`PRODUCT_OPS`, `PASSPORT_OPS`, …) with the
+node's option names, so the marketing change goes out first; point `TRACEPASS_SITE_DIR`
+at the marketing branch to test before it lands.
 
 ### Endpoint truth source
 
