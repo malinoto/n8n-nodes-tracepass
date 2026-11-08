@@ -125,6 +125,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Delete',
+				value: 'delete',
+				action: 'Delete a passport',
+				description:
+					'On a passport marked for deletion, the second step of the deletion: a soft delete that erases nothing. The passport leaves the API and every public surface; its QR shows that the passport has ended, and its machine-readable formats answer 410 Gone. On a draft or in-review passport that was never published, a permanent delete of the passport and everything only it uses. Any other status answers 409: mark a published passport for deletion first. Paid plans only. One v1 write.',
+				routing: {
+					request: {
+						method: 'DELETE',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}',
+					},
+				},
+			},
+			{
 				name: 'Get',
 				value: 'get',
 				action: 'Get a passport',
@@ -188,6 +201,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Latest Measurements by Serial',
+				value: 'getLatestMeasurementsBySerial',
+				action: 'Get the latest battery measurements for a passport by serial',
+				description:
+					'Read the newest measurement for each accepted battery measurement field of a passport addressed by its serial number (null where none has been received yet). If the serial is not unique in your account the API returns 409 \u2014 set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/measurements/latest',
+					},
+				},
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				action: 'Get many passports',
@@ -209,6 +235,19 @@ export const passportOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/api/v1/passports/{{$parameter["passportId"]}}/measurements',
+					},
+				},
+			},
+			{
+				name: 'Get Measurements by Serial',
+				value: 'getMeasurementsBySerial',
+				action: 'Get battery measurement history for a passport by serial',
+				description:
+					'Read the measurement history of a battery passport addressed by its serial number, newest first, optionally filtered by field and time window. If the serial is not unique in your account the API returns 409 \u2014 set the GTIN field to disambiguate.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/measurements',
 					},
 				},
 			},
@@ -278,6 +317,32 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Mark for Deletion',
+				value: 'markForDeletion',
+				action: 'Mark a passport for deletion',
+				description:
+					'The first of the two steps that delete a passport. A marked passport can no longer be edited, and a published one frees its plan slot. Works in any status except archived or already marked. Battery passports need a Reason (400 reason_required without one). Refused with 409 has_live_successor while a newer second-life passport names this one as its predecessor. Paid plans only (403 deletion_not_on_plan on Free). One v1 write.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/mark-for-deletion',
+					},
+				},
+			},
+			{
+				name: 'Mark for Deletion by Serial',
+				value: 'markForDeletionBySerial',
+				action: 'Mark a passport for deletion by serial',
+				description:
+					'Mark a passport addressed by its serial number for deletion, the first of the two steps that delete a passport. A marked passport can no longer be edited. Battery passports need a Reason. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 — set the GTIN field to disambiguate. Paid plans only. One v1 write.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/mark-for-deletion',
+					},
+				},
+			},
+			{
 				name: 'Place on Market',
 				value: 'placeOnMarket',
 				action: 'Place a battery passport on the market',
@@ -317,6 +382,19 @@ export const passportOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Remove Party',
+				value: 'removeParty',
+				action: 'Remove a party from a passport',
+				description:
+					'Remove the economic operator for one role from a passport. Safe to repeat: removing a role that is not set returns { removed: false } and leaves the passport version unchanged. 409 operator_locked when a battery passport is placed on the market and the party carries its operator or facility identifier. One v1 write.',
+				routing: {
+					request: {
+						method: 'DELETE',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/parties/{{$parameter["partyRole"]}}',
+					},
+				},
+			},
+			{
 				name: 'Set Condition Flags',
 				value: 'setConditionFlags',
 				action: 'Set condition flags for a passport',
@@ -339,6 +417,19 @@ export const passportOperations: INodeProperties[] = [
 					request: {
 						method: 'PATCH',
 						url: '=/api/v1/passports/by-serial/{{$parameter["serialNumber"]}}/condition-flags',
+					},
+				},
+			},
+			{
+				name: 'Set Party',
+				value: 'setParty',
+				action: 'Set a party on a passport',
+				description:
+					'Create or replace the economic operator for one role on a passport (manufacturer, importer, authorised representative, distributor, recycler or producer responsibility organisation). Sending the same role again replaces it. Needs a legal name and at least one identifier: GLN, legacy operator ID or operator identifier. An LEI is checked against the GLEIF register: one GLEIF does not list, or lists as annulled, duplicate or cancelled, is refused (400); a lapsed or retired LEI, or a legal name GLEIF does not know for it, is saved with a warning. Returns { role, party, version, warnings? }. 409 operator_locked when a battery passport is placed on the market and the write would change its operator or facility identifier; 409 passport_archived on an archived or marked passport. One v1 write.',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/api/v1/passports/{{$parameter["passportId"]}}/parties/{{$parameter["partyRole"]}}',
 					},
 				},
 			},
@@ -442,6 +533,10 @@ export const passportFields: INodeProperties[] = [
 					'getRegistryAddress',
 					'recordRegistryResult',
 					'undoRegistryResult',
+					'markForDeletion',
+					'setParty',
+					'removeParty',
+					'delete',
 				],
 			},
 		},
@@ -667,6 +762,9 @@ export const passportFields: INodeProperties[] = [
 					'updateFieldBySerial',
 					'getQrBySerial',
 					'captureMeasurementsBySerial',
+					'markForDeletionBySerial',
+					'getMeasurementsBySerial',
+					'getLatestMeasurementsBySerial',
 				],
 			},
 		},
@@ -691,6 +789,9 @@ export const passportFields: INodeProperties[] = [
 					'updateFieldBySerial',
 					'getQrBySerial',
 					'captureMeasurementsBySerial',
+					'markForDeletionBySerial',
+					'getMeasurementsBySerial',
+					'getLatestMeasurementsBySerial',
 				],
 			},
 		},
@@ -698,7 +799,151 @@ export const passportFields: INodeProperties[] = [
 			send: { type: 'query', property: 'gtin' },
 		},
 	},
-	// ---- Archive reason (archive / archiveBySerial) ----------------
+	// ---- Party (setParty, removeParty) -----------------------------
+	// PATCH /passports/{id}/parties/{role}: the role is a path segment, the
+	// party is the body. Identifier fields sit in a collection so only what the
+	// user adds is sent; the platform requires at least one of them.
+	{
+		displayName: 'Role',
+		name: 'partyRole',
+		type: 'options',
+		required: true,
+		default: 'manufacturer',
+		description: 'The economic-operator role to set or remove',
+		options: [
+			{ name: 'Authorised Representative', value: 'authorisedRepresentative' },
+			{ name: 'Distributor', value: 'distributor' },
+			{ name: 'Importer', value: 'importer' },
+			{ name: 'Manufacturer', value: 'manufacturer' },
+			{ name: 'Producer Responsibility Organisation', value: 'producerResponsibilityOrg' },
+			{ name: 'Recycler', value: 'recycler' },
+		],
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['setParty', 'removeParty'] },
+		},
+	},
+	{
+		displayName: 'Legal Name',
+		name: 'partyLegalName',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. EuroBat Recyclers GmbH',
+		description: 'The registered legal name of the economic operator (up to 200 characters)',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['setParty'] },
+		},
+		routing: {
+			send: { type: 'body', property: 'legalName' },
+		},
+	},
+	{
+		displayName: 'Party Fields',
+		name: 'partyFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		description:
+			'At least one identifier is required: GLN, Legacy Operator ID or Operator Identifier',
+		displayOptions: {
+			show: { resource: ['passport'], operation: ['setParty'] },
+		},
+		options: [
+			{
+				displayName: 'Country',
+				name: 'country',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g. DE',
+				description: 'ISO 3166-1 alpha-2 country code, in capitals',
+				routing: {
+					send: { type: 'body', property: 'country', value: '={{ $value || undefined }}' },
+				},
+			},
+			{
+				displayName: 'Email',
+				name: 'email',
+				type: 'string',
+				placeholder: 'name@email.com',
+				default: '',
+				description:
+					'Contact email address. Shown on the public passport, so use a company contact address, not a person.',
+				routing: { send: { type: 'body', property: 'email', value: '={{ $value || undefined }}' } },
+			},
+			{
+				displayName: 'Facility Identifier (JSON)',
+				name: 'facilityIdentifier',
+				type: 'json',
+				default: '={ "scheme": "gln", "gln": "" }',
+				description:
+					'Structured facility identifier per EN 18219: scheme iso6523, gln, did or doi. The gln variant also accepts an extension (a GS1 SGLN sub-location code). Never fills the GLN field.',
+				routing: { send: { type: 'body', property: 'facilityIdentifier' } },
+			},
+			{
+				displayName: 'GLN',
+				name: 'gln',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g. 4012345000009',
+				description: 'The 13-digit GS1 Global Location Number of the operator',
+				routing: { send: { type: 'body', property: 'gln', value: '={{ $value || undefined }}' } },
+			},
+			{
+				displayName: 'Legacy Operator ID',
+				name: 'legacyOperatorId',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g. DE123456789',
+				description:
+					'Free-text identifier (VAT, EORI, supplier code) for an operator without a GLN',
+				routing: {
+					send: { type: 'body', property: 'legacyOperatorId', value: '={{ $value || undefined }}' },
+				},
+			},
+			{
+				displayName: 'Operator Identifier (JSON)',
+				name: 'operatorIdentifier',
+				type: 'json',
+				default: '={ "scheme": "iso6523", "icd": "0199", "value": "" }',
+				description:
+					'Structured operator identifier per EN 18219: scheme iso6523, gln, did or doi. An LEI is iso6523 with icd 0199 and is checked against the GLEIF register. Scheme gln also fills the GLN field, and the two must match if both are set.',
+				routing: { send: { type: 'body', property: 'operatorIdentifier' } },
+			},
+			{
+				displayName: 'Postal Address',
+				name: 'postalAddress',
+				type: 'string',
+				default: '',
+				description:
+					'Postal address with a single contact point, as one line. Shown on the public passport.',
+				routing: {
+					send: { type: 'body', property: 'postalAddress', value: '={{ $value || undefined }}' },
+				},
+			},
+			{
+				displayName: 'Trade Name',
+				name: 'tradeName',
+				type: 'string',
+				default: '',
+				description:
+					'Registered trade name or trade mark. Shown on the public passport; a battery importer must also mark it on the battery.',
+				routing: {
+					send: { type: 'body', property: 'tradeName', value: '={{ $value || undefined }}' },
+				},
+			},
+			{
+				displayName: 'URL',
+				name: 'url',
+				type: 'string',
+				default: '',
+				placeholder: 'e.g. https://example.com',
+				description: "The operator's organisation page (up to 500 characters)",
+				routing: { send: { type: 'body', property: 'url', value: '={{ $value || undefined }}' } },
+			},
+		],
+	},
+	// ---- Archive / deletion reason (archive, mark for deletion) -----
+	// The parameter keeps its original name so existing workflows load unchanged.
 	// The platform requires a closed reason for a battery passport (400
 	// reason_required / invalid_reason) and validates one when given for any
 	// other category. Empty sends no body property at all.
@@ -724,7 +969,10 @@ export const passportFields: INodeProperties[] = [
 			{ name: 'Recycled', value: 'recycled', description: 'The battery has been recycled' },
 		],
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['archive', 'archiveBySerial'] },
+			show: {
+				resource: ['passport'],
+				operation: ['archive', 'archiveBySerial', 'markForDeletion', 'markForDeletionBySerial'],
+			},
 		},
 		routing: {
 			send: { type: 'body', property: 'reason', value: '={{ $value || undefined }}' },
@@ -1173,7 +1421,7 @@ export const passportFields: INodeProperties[] = [
 		placeholder: 'Add Filter',
 		default: {},
 		displayOptions: {
-			show: { resource: ['passport'], operation: ['getMeasurements'] },
+			show: { resource: ['passport'], operation: ['getMeasurements', 'getMeasurementsBySerial'] },
 		},
 		options: [
 			{

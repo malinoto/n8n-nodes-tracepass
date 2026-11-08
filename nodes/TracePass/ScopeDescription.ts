@@ -3,7 +3,9 @@ import type { INodeProperties } from 'n8n-workflow';
 /**
  * Scope resource — operations + fields.
  *
- * Two operations expose the platform's scope-services v1 API:
+ * Four operations expose the platform's scope-services v1 API (the two
+ * catalogue-run operations start a re-check of the whole catalogue and read
+ * its status; they are described on their options below):
  *
  *   - **Check** (`POST /api/v1/scope/check`) answers "does this product type
  *     need a Digital Product Passport, from when, at which level, and what must
@@ -82,12 +84,55 @@ export const scopeOperations: INodeProperties[] = [
 					},
 				},
 			},
+			{
+				name: 'Get Catalogue Run',
+				value: 'getCatalogueRun',
+				action: 'Get a scope catalogue run',
+				description:
+					'Get the status and counts of a catalogue run started with Start Catalogue Run. Poll until status is done or failed; once done, Get Catalogue Report returns the fresh results. Growth plan and above. Not counted against the v1 daily caps.',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/scope/catalogue/runs/{{$parameter["catalogueRunId"]}}',
+					},
+				},
+			},
+			{
+				name: 'Start Catalogue Run',
+				value: 'startCatalogueRun',
+				action: 'Start a scope catalogue run',
+				description:
+					'Re-check every passport in your catalogue against the current scope rules. Returns 202 at once with { runId, status: queued }; follow it with Get Catalogue Run. 409 while a run is already in progress, 429 run_cooldown when one finished too recently. Growth plan and above.',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '/api/v1/scope/catalogue/runs',
+					},
+				},
+			},
 		],
 		default: 'check',
 	},
 ];
 
 export const scopeFields: INodeProperties[] = [
+	// ────────────────────────────────────────────────────────────────────────────
+	// Get Catalogue Run — the run ID from Start Catalogue Run
+	// ────────────────────────────────────────────────────────────────────────────
+
+	{
+		displayName: 'Run ID',
+		name: 'catalogueRunId',
+		type: 'string',
+		required: true,
+		default: '',
+		placeholder: 'e.g. 6728abc123def456789abcde',
+		description: 'The runId returned by Start Catalogue Run',
+		displayOptions: {
+			show: { resource: ['scope'], operation: ['getCatalogueRun'] },
+		},
+	},
+
 	// ────────────────────────────────────────────────────────────────────────────
 	// Check — body fields
 	// ────────────────────────────────────────────────────────────────────────────

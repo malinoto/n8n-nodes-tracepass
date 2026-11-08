@@ -84,12 +84,17 @@ node, so the pre-push hook is installed by hand with `npm run hooks:install`, no
 declarative: the URLs are *data*, so a route renamed on the platform passes lint
 and build and fails in a user's workflow after publish. `tests/routing.test.mjs`
 compares every routing block's URL shape against the platform's real routes under
-`tracepass-platform/src/app/api/v1`, and also catches a `{{…}}` URL missing its
+`tracepass-platform/src/app/api/v1`, and its method against the methods that route
+exports. A coverage test reads the published OpenAPI spec (the marketing repo's
+`public/openapi.json`, or `TRACEPASS_SITE_DIR/public/openapi.json`): every spec
+operation has an n8n operation or an entry in `ABSENT_ON_PURPOSE` with the reason, and
+an entry goes stale (and fails) once the node offers it or the spec drops it. A new v1
+endpoint therefore fails here until someone decides. The test also catches a `{{…}}` URL missing its
 leading `=` (the braces would ship literally), an operation option with no routing
 block, and a lost credential auth-gate.
 
-**Run it with `tracepass-platform` checked out as a sibling.** The cross-repo
-comparison self-skips when it isn't there — that keeps CI green (it clones this
+**Run it with `tracepass-platform` and `tracepass` checked out as siblings.** Each
+cross-repo comparison self-skips when its repo isn't there — that keeps CI green (it clones this
 repo alone), but it also means a solo run silently checks less. Before cutting a
 release, run it where the platform is present.
 

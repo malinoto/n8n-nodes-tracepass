@@ -90,11 +90,28 @@ function toRouteShape(url) {
 }
 
 /**
+ * The HTTP methods a platform route file exports (`export const GET = …`, or
+ * the `export async function POST` form). A Next.js route answers only the
+ * methods it exports, so a node operation with the right URL and the wrong
+ * method gets a 405 in a user's workflow.
+ * @param {string} file Absolute path of a `route.ts`.
+ * @returns {Set<string>} The exported method names.
+ */
+function exportedMethods(file) {
+	const source = readFileSync(file, 'utf8');
+	const methods = new Set();
+	const pattern = /^export\s+(?:const|async\s+function|function)\s+(GET|POST|PUT|PATCH|DELETE)\b/gm;
+	for (const match of source.matchAll(pattern)) methods.add(match[1]);
+	return methods;
+}
+
+/**
  * The platform's real v1 routes, in the same wildcard shape.
- * @returns {Set<string>} One shape per `route.ts` under the platform's v1 folder.
+ * @returns {Map<string, Set<string>>} One entry per `route.ts` under the platform's v1
+ *   folder: its shape, and the methods it exports.
  */
 function platformRouteShapes() {
-	const shapes = new Set();
+	const shapes = new Map();
 	const walk = (dir, segments) => {
 		for (const entry of readdirSync(dir, { withFileTypes: true })) {
 			if (entry.isDirectory()) {
@@ -102,7 +119,7 @@ function platformRouteShapes() {
 				const seg = /^\[.*\]$/.test(entry.name) ? '\u0000' : entry.name;
 				walk(join(dir, entry.name), [...segments, seg]);
 			} else if (entry.name === 'route.ts') {
-				shapes.add(segments.join('/'));
+				shapes.set(segments.join('/'), exportedMethods(join(dir, entry.name)));
 			}
 		}
 	};
@@ -162,6 +179,20 @@ describe('TracePass node — declarative routing', () => {
 			expect(
 				real.has(shape),
 				`${r.owner} → ${r.method} ${r.url}\n  no platform route matches shape "${shape}"`,
+			).toBe(true);
+		}
+	});
+
+	it('every routed operation uses a method its platform route exports', () => {
+		if (!existsSync(PLATFORM_V1)) return;
+
+		const real = platformRouteShapes();
+		for (const r of routes) {
+			const methods = real.get(toRouteShape(r.url));
+			if (!methods) continue; // the URL test above reports a missing route
+			expect(
+				methods.has(r.method.toUpperCase()),
+				`${r.owner} → ${r.method} ${r.url}\n  the route exports only ${[...methods].join(', ')}`,
 			).toBe(true);
 		}
 	});
@@ -685,19 +716,24 @@ describe('TracePass passport — create sends no overage consent', () => {
 	});
 });
 
-describe('TracePass passport — archive reason (battery end of passport)', () => {
+describe('TracePass passport — archive and deletion reason (battery end of passport)', () => {
 	// The platform requires one of a closed set of reasons to archive a battery
-	// passport (400 reason_required / invalid_reason) and reads it from the JSON
-	// body `{ reason }`. Without this field a battery passport cannot be archived
-	// from n8n at all.
+	// passport, or to mark one for deletion (400 reason_required / invalid_reason),
+	// and reads it from the JSON body `{ reason }`. Without this field a battery
+	// passport can be neither archived nor marked for deletion from n8n.
 	const props = new TracePass().description.properties;
 	const reason = props.find((p) => p.name === 'archiveReason');
 	const platformFile = (...segs) => join(HERE, '..', '..', 'tracepass-platform', ...segs);
 
-	it('is offered on both archive operations only', () => {
+	it('is offered on the archive and mark-for-deletion operations only', () => {
 		expect(reason, 'archiveReason field missing').toBeTruthy();
 		expect(reason.displayOptions.show.resource).toEqual(['passport']);
-		expect(reason.displayOptions.show.operation).toEqual(['archive', 'archiveBySerial']);
+		expect(reason.displayOptions.show.operation).toEqual([
+			'archive',
+			'archiveBySerial',
+			'markForDeletion',
+			'markForDeletionBySerial',
+		]);
 	});
 
 	it('is sent as body.reason, and omitted when left empty', () => {
@@ -719,7 +755,7 @@ describe('TracePass passport — archive reason (battery end of passport)', () =
 		]);
 	});
 
-	it('offers only reasons the platform accepts, and both archive routes read body.reason', () => {
+	it('offers only reasons the platform accepts, and all four routes read body.reason', () => {
 		const types = platformFile('src', 'types', 'index.ts');
 		if (!existsSync(types)) return;
 		// The whole array literal, on one line or spread over several (Prettier wraps it).
@@ -735,12 +771,16 @@ describe('TracePass passport — archive reason (battery end of passport)', () =
 				.filter(Boolean)
 				.sort(),
 		).toEqual(platformReasons);
+		// Each route parses its body with its schema from the platform's request
+		// registry and takes `reason` from the result.
 		for (const route of [
 			['passports', '[id]', 'archive'],
 			['passports', 'by-serial', '[serial]', 'archive'],
+			['passports', '[id]', 'mark-for-deletion'],
+			['passports', 'by-serial', '[serial]', 'mark-for-deletion'],
 		]) {
 			const text = readFileSync(join(PLATFORM_V1, ...route, 'route.ts'), 'utf8');
-			expect(text, route.join('/')).toContain('"reason" in body');
+			expect(text, route.join('/')).toMatch(/\{\s*reason\b[^}]*\}\s*=\s*requestSchema\(/);
 		}
 	});
 });
@@ -783,5 +823,187 @@ describe('TracePass passport — Place on Market (battery EU registry entry)', (
 		// code fails the loop until the description names it, without a count here.
 		expect(codes.length).toBeGreaterThanOrEqual(7);
 		for (const c of codes) expect(op.description, c).toContain(c);
+	});
+});
+
+/**
+ * Coverage against the published contract: every operation in the v1 OpenAPI
+ * spec either has an n8n operation or is listed here as absent on purpose,
+ * with the reason. A new platform endpoint that is documented but neither
+ * added to the node nor listed fails this test, so a gap is a decision, not
+ * something nobody noticed.
+ *
+ * The spec lives in the marketing site's repo (`public/openapi.json`), a
+ * sibling checkout; `TRACEPASS_SITE_DIR` points at another copy, such as a
+ * branch worktree. Like the route test above, it returns early when the spec
+ * is not there, because CI clones this repo alone.
+ */
+const SPEC = process.env.TRACEPASS_SITE_DIR
+	? join(process.env.TRACEPASS_SITE_DIR, 'public', 'openapi.json')
+	: join(HERE, '..', '..', 'tracepass', 'public', 'openapi.json');
+
+/** Spec operations the node does not offer, keyed `METHOD /path` as the spec writes them. */
+const ABSENT_ON_PURPOSE = {
+	'POST /api/v1/products/{id}/images':
+		'A multipart file upload, which declarative routing does not send.',
+	'DELETE /api/v1/products/{id}/images/{index}':
+		'A product image list is managed through product Create and Update.',
+	'DELETE /api/v1/products/{id}':
+		'An irreversible hard delete; Archive is the path automations get.',
+	'POST /api/v1/scope/reports': "Serves the DPP Assistant's channel, which has its own MCP server.",
+	'GET /api/v1/company/compliance-profile':
+		"Serves the DPP Assistant's channel, which has its own MCP server.",
+	'PATCH /api/v1/company/compliance-profile':
+		"Serves the DPP Assistant's channel, which has its own MCP server.",
+	'DELETE /api/v1/company/compliance-profile':
+		"Serves the DPP Assistant's channel, which has its own MCP server.",
+	'GET /api/v1/regulatory/required-fields':
+		"Serves the DPP Assistant's channel, which has its own MCP server; Template Get gives the field requirements.",
+	'GET /api/v1/regulatory/changes':
+		"Serves the DPP Assistant's channel, which has its own MCP server.",
+	'GET /api/v1/regulatory/registry-guidance':
+		"Serves the DPP Assistant's channel, which has its own MCP server.",
+	'GET /api/exports/tenant': 'Dashboard session only; an API key or OAuth token cannot reach it.',
+	'GET /api/exports/tenant/epcis':
+		'Dashboard session only; the per-passport EPCIS operations cover API access.',
+	'GET /api/exports/tenant/registry-batch':
+		'Dashboard session only; Create Registry Upload File covers API access.',
+	'POST /api/oauth/register': 'OAuth plumbing: an app is registered once in the dashboard.',
+	'GET /api/oauth/authorize': 'Used by the TracePass OAuth2 credential, not an operation.',
+	'POST /api/oauth/token': 'Used by the TracePass OAuth2 credential, which also refreshes tokens.',
+	'POST /api/oauth/revoke': 'OAuth plumbing: access is revoked in the dashboard.',
+};
+
+/**
+ * Collapse every path parameter so the spec's `{id}` and the node's
+ * `{{$parameter["passportId"]}}` compare equal.
+ * @param {string} method HTTP method.
+ * @param {string} path A spec path or a node URL.
+ * @returns {string} `METHOD /path` with each parameter as `{}`.
+ */
+function operationKey(method, path) {
+	const shape = path
+		.replace(/^=/, '')
+		.replace(/\{\{[^}]*\}\}/g, '{}')
+		.replace(/\{[^}]+\}/g, '{}');
+	return `${method.toUpperCase()} ${shape}`;
+}
+
+describe('TracePass node — coverage of the published v1 contract', () => {
+	const offered = new Set(collectRoutes().map((r) => operationKey(r.method, r.url)));
+	const spec = existsSync(SPEC) ? JSON.parse(readFileSync(SPEC, 'utf8')) : null;
+	const specOps = spec
+		? Object.entries(spec.paths).flatMap(([path, item]) =>
+				['get', 'post', 'put', 'patch', 'delete']
+					.filter((m) => item[m])
+					.map((m) => ({ key: `${m.toUpperCase()} ${path}`, shape: operationKey(m, path) })),
+			)
+		: [];
+
+	it('every spec operation has an n8n operation or a recorded reason for its absence', () => {
+		if (!spec) return;
+		expect(specOps.length, 'no operations read from the spec — check the path').toBeGreaterThan(40);
+		const uncovered = specOps
+			.filter((op) => !offered.has(op.shape) && !(op.key in ABSENT_ON_PURPOSE))
+			.map((op) => op.key);
+		expect(
+			uncovered,
+			'add an n8n operation, or list it in ABSENT_ON_PURPOSE with the reason',
+		).toEqual([]);
+	});
+
+	it('lists no absence that is stale: each one is in the spec and not offered', () => {
+		if (!spec) return;
+		const keys = new Set(specOps.map((op) => op.key));
+		for (const key of Object.keys(ABSENT_ON_PURPOSE)) {
+			expect(keys.has(key), `${key} is not in the spec any more`).toBe(true);
+			const [method, path] = key.split(' ');
+			expect(
+				offered.has(operationKey(method, path)),
+				`${key} is offered now; remove it from the list`,
+			).toBe(false);
+		}
+	});
+
+	it('gives every absence a reason', () => {
+		for (const [key, reason] of Object.entries(ABSENT_ON_PURPOSE)) {
+			expect(reason.length, key).toBeGreaterThan(20);
+		}
+	});
+});
+
+describe('TracePass passport — parties, deletion and by-serial measurement reads', () => {
+	const props = new TracePass().description.properties;
+	const prop = (name) => props.find((p) => p.name === name);
+	const shownFor = (name) => prop(name)?.displayOptions?.show?.operation ?? [];
+	const spec = existsSync(SPEC) ? JSON.parse(readFileSync(SPEC, 'utf8')) : null;
+
+	it('Set Party sends the legal name as body.legalName and needs a role and a passport', () => {
+		expect(prop('partyLegalName').routing.send).toEqual({ type: 'body', property: 'legalName' });
+		expect(prop('partyLegalName').required).toBe(true);
+		expect(shownFor('partyRole')).toEqual(['setParty', 'removeParty']);
+		expect(shownFor('passportId')).toEqual(
+			expect.arrayContaining(['setParty', 'removeParty', 'delete', 'markForDeletion']),
+		);
+	});
+
+	it('Remove Party sends no body', () => {
+		expect(shownFor('partyLegalName')).toEqual(['setParty']);
+		expect(shownFor('partyFields')).toEqual(['setParty']);
+	});
+
+	it('offers exactly the party roles the spec defines', () => {
+		if (!spec) return;
+		expect(
+			prop('partyRole')
+				.options.map((o) => o.value)
+				.sort(),
+		).toEqual([...spec.components.schemas.PartyRoleEnum.enum].sort());
+	});
+
+	it('sends each party field to a writable property of the spec Party schema', () => {
+		if (!spec) return;
+		const party = spec.components.schemas.Party.properties;
+		for (const option of prop('partyFields').options) {
+			const property = option.routing.send.property;
+			expect(option.routing.send.type, option.name).toBe('body');
+			expect(party[property], `${option.name} → ${property} is not a Party property`).toBeTruthy();
+			expect(party[property].readOnly, `${property} is read-only`).not.toBe(true);
+		}
+	});
+
+	it('mark for deletion by serial takes the serial and the GTIN disambiguator', () => {
+		for (const op of [
+			'markForDeletionBySerial',
+			'getMeasurementsBySerial',
+			'getLatestMeasurementsBySerial',
+		]) {
+			expect(shownFor('serialNumber'), op).toContain(op);
+			expect(shownFor('serialGtin'), op).toContain(op);
+		}
+	});
+
+	it('the measurement history filters apply by id and by serial', () => {
+		expect(shownFor('measurementFilters')).toEqual(['getMeasurements', 'getMeasurementsBySerial']);
+	});
+});
+
+describe('TracePass scope — catalogue runs', () => {
+	const props = new TracePass().description.properties;
+	const runId = props.find((p) => p.name === 'catalogueRunId');
+
+	it('Get Catalogue Run takes the run ID from Start Catalogue Run', () => {
+		expect(runId.required).toBe(true);
+		expect(runId.displayOptions.show).toEqual({
+			resource: ['scope'],
+			operation: ['getCatalogueRun'],
+		});
+	});
+
+	it('Start Catalogue Run sends no parameters', () => {
+		const forStart = props.filter((p) =>
+			p.displayOptions?.show?.operation?.includes('startCatalogueRun'),
+		);
+		expect(forStart).toEqual([]);
 	});
 });

@@ -62,8 +62,9 @@ files; if they ever disagree, the code is right.
   counts and the other Battery Regulation Annex XIII point 4 values) into a
   published battery passport; metered against the plan's monthly measurement
   allowance, and paid plans keep counting past it at no charge
-- **Get Measurements** / **Get Latest Measurements** — read a battery
-  passport's measurement history, or the newest value per field
+- **Get Measurements** / **Get Latest Measurements** (and their *by
+  Serial* forms) — read a battery passport's measurement history, or the
+  newest value per field
 - **Get** / **Get by Serial** — retrieve a passport by ID or by its
   serial number
 - **Get Many** — list passports, with status / product filters
@@ -131,6 +132,14 @@ files; if they ever disagree, the code is right.
   **Warning:** approving a flag may make additional fields required — an
   empty required field will block publishing with a `conditional_missing`
   error
+- **Set Party** — create or replace the economic operator for one role
+  (manufacturer, importer, authorised representative, distributor,
+  recycler, producer responsibility organisation): a legal name plus at
+  least one identifier (GLN, legacy operator ID, or an EN 18219 operator
+  identifier; an LEI is checked against the GLEIF register). After a
+  battery passport is placed on the market, its operator and facility
+  identifiers are locked (409 `operator_locked`)
+- **Remove Party** — remove the party for one role; safe to repeat
 - **Update Field** / **Update Field by Serial** — set the value of one
   passport field, by ID or by serial
 - **Suspend** / **Suspend by Serial** — suspend a published passport
@@ -142,6 +151,15 @@ files; if they ever disagree, the code is right.
   battery has been recycled, was never placed on the market or put into
   service, or is a duplicate or erroneous record. A passport marked for
   deletion cannot be archived (409)
+- **Mark for Deletion** / **Mark for Deletion by Serial** — the first of
+  the two steps that delete a passport: the passport can no longer be
+  edited, and a published one frees its plan slot. Takes the same
+  **Reason**, required for battery passports. Refused (409) while a newer
+  second-life passport names this one as its predecessor. Paid plans
+- **Delete** — on a passport marked for deletion, the second step: a soft
+  delete that erases nothing (the QR shows that the passport has ended).
+  On a never-published draft or in-review passport, a permanent delete.
+  Any other status answers 409. Paid plans
 
 The **by-serial** operations address a passport by your own serial number.
 A serial is unique only *within a GTIN*, so if the same serial exists under
@@ -180,6 +198,12 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
   page). Requires Growth plan or above (`scopeCatalogueEnabled`); 403
   `plan_upgrade_required` below that. Counts one v1 daily read per
   page.
+- **Start Catalogue Run** — re-check every passport in the catalogue
+  against the current scope rules. Returns 202 with a `runId`; 409 while a
+  run is in progress, 429 `run_cooldown` when one finished too recently.
+  Growth plan or above
+- **Get Catalogue Run** — the status and counts of a run; once `status`
+  is `done`, *Get Catalogue Report* returns the fresh results
 
 ### Template
 
