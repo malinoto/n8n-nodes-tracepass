@@ -437,7 +437,8 @@ export const passportOperations: INodeProperties[] = [
 				name: 'Suspend',
 				value: 'suspend',
 				action: 'Suspend a passport',
-				description: 'Suspend a published passport. Reversible. The QR shows a suspended state.',
+				description:
+					'Suspend a published passport. Reversible. The QR shows a suspended state. Refused (409) once the passport is placed on the market.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -450,7 +451,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'suspendBySerial',
 				action: 'Suspend a passport by serial',
 				description:
-					'Suspend a published passport addressed by its serial number. Reversible. If the serial is not unique in your account the API returns 409 \u2014 set the GTIN field to disambiguate.',
+					'Suspend a published passport addressed by its serial number. Reversible, and refused (409) once the passport is placed on the market. If the serial is not unique in your account the API returns 409 \u2014 set the GTIN field to disambiguate.',
 				routing: {
 					request: {
 						method: 'POST',
