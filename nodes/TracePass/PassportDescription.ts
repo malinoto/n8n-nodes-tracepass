@@ -25,7 +25,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'archive',
 				action: 'Archive a passport',
 				description:
-					'Permanently archive a passport. The public QR will return 404. Battery passports need a Reason.',
+					'Permanently archive a passport. Its public URL then shows an archive notice (machine formats answer 404) and only an authority access grant still reads it. Battery passports need a Reason.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -38,7 +38,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'archiveBySerial',
 				action: 'Archive a passport by serial',
 				description:
-					'Permanently archive a passport addressed by its serial number. The public QR will return 404. Battery passports need a Reason. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
+					'Permanently archive a passport addressed by its serial number. Its public URL then shows an archive notice (machine formats answer 404) and only an authority access grant still reads it. Battery passports need a Reason. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
 				routing: {
 					request: {
 						method: 'POST',

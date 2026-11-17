@@ -1042,3 +1042,73 @@ describe('TracePass node — the docs page lists the same operations', () => {
 		}
 	});
 });
+
+describe('TracePass product — dealer links and the model page QR', () => {
+	const props = new TracePass().description.properties;
+	const prop = (name) => props.find((p) => p.name === name);
+	const productOp = (value) =>
+		props
+			.find((p) => p.name === 'operation' && p.displayOptions?.show?.resource?.[0] === 'product')
+			.options.find((o) => o.value === value);
+	const binary = (option) => ({
+		encoding: option.routing?.request?.encoding,
+		destination: option.routing?.output?.postReceive?.[0]?.properties?.destinationProperty,
+	});
+
+	it('Get Links and Get Model QR call the links routes with GET', () => {
+		expect(productOp('getLinks').routing.request).toEqual({
+			method: 'GET',
+			url: '=/api/v1/products/{{$parameter["productId"]}}/links',
+		});
+		expect(productOp('getModelQr').routing.request).toEqual({
+			method: 'GET',
+			url: '=/api/v1/products/{{$parameter["productId"]}}/links/model-qr',
+		});
+	});
+
+	it('both take the product ID', () => {
+		expect(prop('productId').displayOptions.show.operation).toEqual(
+			expect.arrayContaining(['getLinks', 'getModelQr']),
+		);
+	});
+
+	it('Get Links offers json, csv and zip, and returns csv and zip as binary', () => {
+		const format = prop('linksFormat');
+		expect(format.default).toBe('json');
+		expect(format.routing.send).toEqual({ type: 'query', property: 'format' });
+		const byValue = Object.fromEntries(format.options.map((o) => [o.value, o]));
+		expect(Object.keys(byValue).sort()).toEqual(['csv', 'json', 'zip']);
+		expect(binary(byValue.json)).toEqual({ encoding: undefined, destination: undefined });
+		expect(binary(byValue.csv)).toEqual({ encoding: 'arraybuffer', destination: 'data' });
+		expect(binary(byValue.zip)).toEqual({ encoding: 'arraybuffer', destination: 'data' });
+	});
+
+	it('limit (max 5000) and cursor apply to the json format only', () => {
+		for (const [name, property] of [
+			['linksLimit', 'limit'],
+			['linksCursor', 'cursor'],
+		]) {
+			expect(prop(name).routing.send.property).toBe(property);
+			expect(prop(name).displayOptions.show.operation).toEqual(['getLinks']);
+			expect(prop(name).displayOptions.show.linksFormat).toEqual(['json']);
+		}
+		expect(prop('linksLimit').typeOptions.maxValue).toBe(5000);
+		expect(prop('linksLimit').default).toBe(1000);
+	});
+
+	it('Get Model QR sends format (svg default, binary) and an optional gtin', () => {
+		const format = prop('modelQrFormat');
+		expect(format.default).toBe('svg');
+		expect(format.options.map((o) => o.value).sort()).toEqual(['png', 'svg']);
+		for (const option of format.options) {
+			expect(binary(option)).toEqual({ encoding: 'arraybuffer', destination: 'data' });
+		}
+		expect(prop('modelQrGtin').routing.send.property).toBe('gtin');
+		expect(prop('modelQrGtin').routing.send.value).toBe('={{ $value || undefined }}');
+	});
+
+	it('no operation still says the archived QR 404s', () => {
+		const text = JSON.stringify(props);
+		expect(text).not.toMatch(/public QR will return 404/);
+	});
+});

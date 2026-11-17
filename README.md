@@ -43,6 +43,16 @@ files; if they ever disagree, the code is right.
   with 409 while any non-archived passport still references it
 - **Get** — retrieve a product by ID
 - **Get Many** — list products, with category / search filters
+- **Get Links** — every published passport of a product with its serial,
+  passport URL and status, plus the product's model page URL: the answer to a
+  dealer or web shop asking for the links. **Format** JSON (paged with _Limit_
+  and _Cursor_; also carries a QR API URL that needs your API credentials), CSV
+  or ZIP (a passports file, a short message to forward and the model page QR;
+  refused above 50,000 published passports). CSV and ZIP arrive as a binary file
+- **Get Model QR** — the QR code of the product's public model page (SVG or
+  PNG, as a binary file); set **GTIN** only when the product's published
+  passports carry more than one. The model page is the GS1 address without a
+  serial and shows only what is true of every unit
 - **Update** — update a product's name, model, or description
 
 ### Passport
@@ -50,20 +60,20 @@ files; if they ever disagree, the code is right.
 - **Create** — create a Digital Product Passport as a draft (a draft
   takes no plan DPP slot and is not billed; the slot, and any overage,
   is taken when it is published in the TracePass dashboard). For a repurposed, remanufactured or reused battery, add
-  *Lineage (JSON)* under *Additional Options* to link the new passport
+  _Lineage (JSON)_ under _Additional Options_ to link the new passport
   to the original(s) (Battery Regulation Art. 77(7))
-- **Create Batch** — create up to 100 passport *shells* in one call (each
+- **Create Batch** — create up to 100 passport _shells_ in one call (each
   item: a product ID plus a GS1 GTIN + serial or an EN 18219 identifier
   scheme; battery passports accept only GS1 or ISO 15459). Field values are
-  not accepted here — set them afterwards with *Update Field*. Partial
+  not accepted here — set them afterwards with _Update Field_. Partial
   success per item; consumes one plan DPP slot per passport
 - **Capture Measurements** / **Capture Measurements by Serial** — push
   over-life battery data from your own equipment (state of health, cycle
   counts and the other Battery Regulation Annex XIII point 4 values) into a
   published battery passport; metered against the plan's monthly measurement
   allowance, and paid plans keep counting past it at no charge
-- **Get Measurements** / **Get Latest Measurements** (and their *by
-  Serial* forms) — read a battery passport's measurement history, or the
+- **Get Measurements** / **Get Latest Measurements** (and their _by
+  Serial_ forms) — read a battery passport's measurement history, or the
   newest value per field
 - **Get** / **Get by Serial** — retrieve a passport by ID or by its
   serial number
@@ -74,7 +84,7 @@ files; if they ever disagree, the code is right.
 - **Get Snapshots** — list a passport's immutability snapshots, newest
   first (one is written on publish and after every change to a non-draft
   passport), each with version, reason, actor, content hash and a
-  re-verified `hashValid`; set *As Of* to get the version valid at a given
+  re-verified `hashValid`; set _As Of_ to get the version valid at a given
   moment instead
 - **Get Snapshot** — the full archival record of one snapshot: the complete
   JSON-LD the passport asserted at that time, plus its content hash
@@ -96,17 +106,17 @@ files; if they ever disagree, the code is right.
   `registry_not_ready` with `findingDetails`, `invalid_upi`). Battery only,
   paid plans
 - **Create Registry Upload File** — build the EU DPP Registry upload file
-  for 1–100 battery passports (*Passport IDs*, comma-separated), for the
+  for 1–100 battery passports (_Passport IDs_, comma-separated), for the
   operator to upload on the Registry website. Only passports that would pass
   go in; the rest come back in `excluded` with a reason, because the Registry
   rejects the whole file over one bad entry. Returns
   `{ xml, filename, included, excluded }` — save `xml` under `filename`.
   Paid plans
 - **Record Registry Result** — record what the operator reports after acting
-  on the Registry website. *Production*: the passport is registered
-  (optional *Date of Placing on the Market* and *Registration ID*); the
-  operator parties lock. *Acceptance*: a test result (*Passed* / *Failed*,
-  optional *Error Code*) with no legal effect. The operator's statement —
+  on the Registry website. _Production_: the passport is registered
+  (optional _Date of Placing on the Market_ and _Registration ID_); the
+  operator parties lock. _Acceptance_: a test result (_Passed_ / _Failed_,
+  optional _Error Code_) with no legal effect. The operator's statement —
   TracePass does not verify it with the Registry. Paid plans
 - **Undo Registry Result** — remove a mistakenly recorded production or
   acceptance result (TracePass's record only, never the Registry; a
@@ -114,9 +124,9 @@ files; if they ever disagree, the code is right.
   Paid plans
 - **Place on Market** — register a published battery passport through an
   EN 18222 registry API under your account's own registry access. The EU DPP
-  Registry does not accept this path — for it, use *Get Registry Address* or
-  *Create Registry Upload File*, register on the Registry website, then
-  *Record Registry Result*. Asynchronous: returns 202 (`placing`); read the passport to see
+  Registry does not accept this path — for it, use _Get Registry Address_ or
+  _Create Registry Upload File_, register on the Registry website, then
+  _Record Registry Result_. Asynchronous: returns 202 (`placing`); read the passport to see
   `placed` (with `registrationId`) or `rejected` (with
   `registrationRejectionReason`), and run it again to retry a rejection.
   Refused with 409 and a code (`not_a_battery`, `not_published`,
@@ -145,7 +155,9 @@ files; if they ever disagree, the code is right.
 - **Suspend** / **Suspend by Serial** — suspend a published passport
   (reversible), by ID or by serial
 - **Archive** / **Archive by Serial** — archive a passport
-  (**irreversible** — the public QR permanently 404s), by ID or by serial.
+  (**irreversible** — the public URL then shows an archive notice and machine
+  formats answer 404; only an authority access grant still reads it), by ID or
+  by serial.
   The optional **Reason** (Recycled, Never Placed, Duplicate or Error) is
   **required for battery passports**: a battery passport ends only when the
   battery has been recycled, was never placed on the market or put into
@@ -162,7 +174,7 @@ files; if they ever disagree, the code is right.
   Any other status answers 409. Paid plans
 
 The **by-serial** operations address a passport by your own serial number.
-A serial is unique only *within a GTIN*, so if the same serial exists under
+A serial is unique only _within a GTIN_, so if the same serial exists under
 two GTINs in your account a serial-only call returns **409** — set the
 optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 
@@ -192,7 +204,7 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
 - **Get Catalogue Report** — get the company-wide scope report: for
   every product and every distinct fact set among its passports,
   whether a passport is needed, from when, at which level and under
-  which act. Filter by classification, category or *Changed Only* to
+  which act. Filter by classification, category or _Changed Only_ to
   see only rows whose answer changed in the most recent run. Use
   `nextCursor` to page through the full report (up to 500 rows per
   page). Requires Growth plan or above (`scopeCatalogueEnabled`); 403
@@ -203,7 +215,7 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
   run is in progress, 429 `run_cooldown` when one finished too recently.
   Growth plan or above
 - **Get Catalogue Run** — the status and counts of a run; once `status`
-  is `done`, *Get Catalogue Report* returns the fresh results
+  is `done`, _Get Catalogue Report_ returns the fresh results
 
 ### Template
 
@@ -214,7 +226,7 @@ optional **GTIN (Disambiguator)** field to resolve the passport exactly.
   level and governing regulation reference)
 
 Templates are read-only reference data — use them to discover what a
-compliant passport in a category requires *before* creating products
+compliant passport in a category requires _before_ creating products
 and passports.
 
 ## Credentials
@@ -223,10 +235,10 @@ The node supports both of TracePass's auth methods. On the node, pick
 one in the **Authentication** dropdown — n8n then shows the matching
 credential type (you only fill in the one you chose):
 
-| **Authentication** | Credential type | Best for |
-|---|---|---|
-| **Access Token** | TracePass API | A key you own — single user, server-to-server automation |
-| **OAuth2** | TracePass OAuth2 API | Acting on a specific user's behalf, with scoped + revocable access |
+| **Authentication** | Credential type      | Best for                                                           |
+| ------------------ | -------------------- | ------------------------------------------------------------------ |
+| **Access Token**   | TracePass API        | A key you own — single user, server-to-server automation           |
+| **OAuth2**         | TracePass OAuth2 API | Acting on a specific user's behalf, with scoped + revocable access |
 
 **Access Token (API key)** — the simplest. In the TracePass dashboard,
 go to **Developer → API Keys**, create a key (it starts with `tp_`),
@@ -245,7 +257,7 @@ Request only the scopes the workflow needs (e.g.
 so n8n can refresh). The user can revoke the connection any time under
 **Developer → OAuth Apps → Connected Apps**.
 
-For both, the *Base URL* defaults to `https://app.tracepass.eu` —
+For both, the _Base URL_ defaults to `https://app.tracepass.eu` —
 change it only for a self-hosted or staging deployment.
 
 ## Example workflows
@@ -259,6 +271,7 @@ passports and posts a summary to Slack.
 
 **CSV → passports** — read a CSV of serial numbers and create a
 passport per row.
+
 ## Compatibility
 
 Requires n8n 1.x. Tested against the current n8n community-node API
