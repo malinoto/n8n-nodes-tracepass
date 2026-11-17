@@ -45,9 +45,10 @@ through a secret `pa_` token, and manage the grants issued.
 - **Get** / **Get Many** — read one grant or list them (filter by role, status,
   passport or product); never returns a token
 - **Get Activity** — the access log of a grant
-- **Update** — change a grant's label, purpose, evidence, expiry (or choose
-  *No Expiry*) or scope; to change the scope set *Scope Kind*, plus *Scope IDs*
-  for chosen products or passports
+- **Update** — change a grant's label, purpose, evidence, expiry or scope; to
+  change the scope set *Scope Kind*, plus *Scope IDs* for chosen products or
+  passports. A grant without an expiry is set in the TracePass dashboard, the API
+  or the MCP server
 - **Revoke** — end a grant at once; safe to repeat
 
 Needs an OAuth2 credential with the `access_grants:read` / `access_grants:write`

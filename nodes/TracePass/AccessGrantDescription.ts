@@ -249,22 +249,7 @@ export const accessGrantFields: INodeProperties[] = [
 					send: {
 						type: 'body',
 						property: 'expiresInDays',
-						value: '={{ $parameter.grantCreateFields.noExpiry ? undefined : $value }}',
-					},
-				},
-			},
-			{
-				displayName: 'No Expiry',
-				name: 'noExpiry',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether the grant never expires (the role must allow it). Takes precedence over Expires in Days.',
-				routing: {
-					send: {
-						type: 'body',
-						property: 'expiresInDays',
-						value: '={{ $value ? null : undefined }}',
+						value: '={{ $value }}',
 					},
 				},
 			},
@@ -329,7 +314,7 @@ export const accessGrantFields: INodeProperties[] = [
 					send: {
 						type: 'body',
 						property: 'expiresInDays',
-						value: '={{ $parameter.grantUpdateFields.noExpiry ? undefined : $value }}',
+						value: '={{ $value }}',
 					},
 				},
 			},
@@ -340,21 +325,6 @@ export const accessGrantFields: INodeProperties[] = [
 				default: '',
 				description: 'Who the grant is for (max 120 characters)',
 				routing: { send: { type: 'body', property: 'label' } },
-			},
-			{
-				displayName: 'No Expiry',
-				name: 'noExpiry',
-				type: 'boolean',
-				default: false,
-				description:
-					'Whether the grant never expires (the role must allow it). Takes precedence over Expires in Days.',
-				routing: {
-					send: {
-						type: 'body',
-						property: 'expiresInDays',
-						value: '={{ $value ? null : undefined }}',
-					},
-				},
 			},
 			{
 				displayName: 'Purpose',

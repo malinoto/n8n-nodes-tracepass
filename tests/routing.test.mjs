@@ -1184,26 +1184,18 @@ describe('TracePass access grants — routes, body and the token warning', () =>
 		});
 	});
 
-	it('Create and Update offer No Expiry, which sends null and silences Expires in Days', () => {
-		for (const [field, name] of [
-			['grantCreateFields', 'grantCreateFields'],
-			['grantUpdateFields', 'grantUpdateFields'],
-		]) {
+	it('Create and Update offer no "No Expiry" control (its null cannot be tested without n8n\'s routing engine)', () => {
+		// A grant without an expiry is set in the dashboard, the API or MCP; here
+		// Expires in Days is sent as given, or left out for the 12-month default.
+		for (const name of ['grantCreateFields', 'grantUpdateFields']) {
 			const options = prop(name).options;
-			const noExpiry = options.find((o) => o.name === 'noExpiry');
-			expect(noExpiry.type, field).toBe('boolean');
-			expect(noExpiry.routing.send.property).toBe('expiresInDays');
-			const evalNo = (v) =>
-				new Function('$value', `return ${noExpiry.routing.send.value.slice(3, -2)}`)(v);
-			expect(evalNo(true)).toBeNull();
-			expect(evalNo(false)).toBeUndefined();
-			const days = options.find((o) => o.name === 'expiresInDays').routing.send.value;
-			const evalDays = (flag) =>
-				new Function('$value', '$parameter', `return ${days.slice(3, -2)}`)(30, {
-					[name]: { noExpiry: flag },
-				});
-			expect(evalDays(true)).toBeUndefined();
-			expect(evalDays(false)).toBe(30);
+			expect(
+				options.find((o) => o.name === 'noExpiry'),
+				name,
+			).toBeUndefined();
+			const days = options.find((o) => o.name === 'expiresInDays');
+			expect(days.routing.send.property, name).toBe('expiresInDays');
+			expect(days.routing.send.value ?? '={{ $value }}', name).toBe('={{ $value }}');
 		}
 	});
 
