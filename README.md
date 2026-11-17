@@ -84,11 +84,13 @@ files; if they ever disagree, the code is right.
 - **Get Snapshots** — list a passport's immutability snapshots, newest
   first (one is written on publish and after every change to a non-draft
   passport), each with version, reason, actor, content hash and a
-  re-verified `hashValid`; set _As Of_ to get the version valid at a given
+  re-verified `hashValid`, plus `hashMethod` (`jcs-sha256` for new snapshots,
+  `sorted-json-sha256` for older ones), `previousHash` (hash chain) and
+  `chainLink`, with a chain verdict over all snapshots on the list; set _As Of_ to get the version valid at a given
   moment instead
 - **Get Snapshot** — the full archival record of one snapshot: the complete
-  JSON-LD the passport asserted at that time, plus its content hash
-  (re-verified on read)
+  JSON-LD the passport asserted at that time, plus its content hash, hash
+  method and previous hash (re-verified on read)
 - **Compliance** — get a three-tier compliance verdict (compliant /
   compliant_with_warnings / incomplete) with regulation-cited findings —
   missing required fields/parties, format issues, and per-category
