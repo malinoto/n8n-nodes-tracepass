@@ -1018,6 +1018,7 @@ describe('TracePass node — the docs page lists the same operations', () => {
 	const siteDir = process.env.TRACEPASS_SITE_DIR ?? join(HERE, '..', '..', 'tracepass');
 	const prose = join(siteDir, 'src', 'data', 'api-docs', 'prose', 'n8n.tsx');
 	const LISTS = {
+		accessGrant: 'ACCESS_GRANT_OPS',
 		product: 'PRODUCT_OPS',
 		passport: 'PASSPORT_OPS',
 		epcis: 'EPCIS_OPS',
@@ -1040,5 +1041,180 @@ describe('TracePass node — the docs page lists the same operations', () => {
 				property.options.map((o) => o.name),
 			);
 		}
+	});
+});
+
+describe('TracePass product — dealer links and the model page QR', () => {
+	const props = new TracePass().description.properties;
+	const prop = (name) => props.find((p) => p.name === name);
+	const productOp = (value) =>
+		props
+			.find((p) => p.name === 'operation' && p.displayOptions?.show?.resource?.[0] === 'product')
+			.options.find((o) => o.value === value);
+	const binary = (option) => ({
+		encoding: option.routing?.request?.encoding,
+		destination: option.routing?.output?.postReceive?.[0]?.properties?.destinationProperty,
+	});
+
+	it('Get Links and Get Model QR call the links routes with GET', () => {
+		expect(productOp('getLinks').routing.request).toEqual({
+			method: 'GET',
+			url: '=/api/v1/products/{{$parameter["productId"]}}/links',
+		});
+		expect(productOp('getModelQr').routing.request).toEqual({
+			method: 'GET',
+			url: '=/api/v1/products/{{$parameter["productId"]}}/links/model-qr',
+		});
+	});
+
+	it('both take the product ID', () => {
+		expect(prop('productId').displayOptions.show.operation).toEqual(
+			expect.arrayContaining(['getLinks', 'getModelQr']),
+		);
+	});
+
+	it('Get Links offers json, csv and zip, and returns csv and zip as binary', () => {
+		const format = prop('linksFormat');
+		expect(format.default).toBe('json');
+		expect(format.routing.send).toEqual({ type: 'query', property: 'format' });
+		const byValue = Object.fromEntries(format.options.map((o) => [o.value, o]));
+		expect(Object.keys(byValue).sort()).toEqual(['csv', 'json', 'zip']);
+		expect(binary(byValue.json)).toEqual({ encoding: undefined, destination: undefined });
+		expect(binary(byValue.csv)).toEqual({ encoding: 'arraybuffer', destination: 'data' });
+		expect(binary(byValue.zip)).toEqual({ encoding: 'arraybuffer', destination: 'data' });
+	});
+
+	it('limit (max 5000) and cursor apply to the json format only', () => {
+		for (const [name, property] of [
+			['linksLimit', 'limit'],
+			['linksCursor', 'cursor'],
+		]) {
+			expect(prop(name).routing.send.property).toBe(property);
+			expect(prop(name).displayOptions.show.operation).toEqual(['getLinks']);
+			expect(prop(name).displayOptions.show.linksFormat).toEqual(['json']);
+		}
+		expect(prop('linksLimit').typeOptions.maxValue).toBe(5000);
+		expect(prop('linksLimit').default).toBe(1000);
+	});
+
+	it('Get Model QR sends format (svg default, binary) and an optional gtin', () => {
+		const format = prop('modelQrFormat');
+		expect(format.default).toBe('svg');
+		expect(format.options.map((o) => o.value).sort()).toEqual(['png', 'svg']);
+		for (const option of format.options) {
+			expect(binary(option)).toEqual({ encoding: 'arraybuffer', destination: 'data' });
+		}
+		expect(prop('modelQrGtin').routing.send.property).toBe('gtin');
+		expect(prop('modelQrGtin').routing.send.value).toBe('={{ $value || undefined }}');
+	});
+
+	it('no operation still says the archived QR 404s', () => {
+		const text = JSON.stringify(props);
+		expect(text).not.toMatch(/public QR will return 404/);
+	});
+});
+
+describe('TracePass access grants — routes, body and the token warning', () => {
+	const props = new TracePass().description.properties;
+	const prop = (name) => props.find((p) => p.name === name);
+	const grantOp = (value) =>
+		props
+			.find(
+				(p) => p.name === 'operation' && p.displayOptions?.show?.resource?.[0] === 'accessGrant',
+			)
+			.options.find((o) => o.value === value);
+
+	it('maps each operation to its access-grants route and method', () => {
+		const route = (v) => `${grantOp(v).routing.request.method} ${grantOp(v).routing.request.url}`;
+		expect(route('create')).toBe('POST /api/v1/access-grants');
+		expect(route('getAll')).toBe('GET /api/v1/access-grants');
+		expect(route('get')).toBe('GET =/api/v1/access-grants/{{$parameter["accessGrantId"]}}');
+		expect(route('update')).toBe('PATCH =/api/v1/access-grants/{{$parameter["accessGrantId"]}}');
+		expect(route('revoke')).toBe('DELETE =/api/v1/access-grants/{{$parameter["accessGrantId"]}}');
+		expect(route('getActivity')).toBe(
+			'GET =/api/v1/access-grants/{{$parameter["accessGrantId"]}}/activity',
+		);
+	});
+
+	it('the grant ID is asked for exactly where the URL uses it', () => {
+		expect(prop('accessGrantId').displayOptions.show.operation.sort()).toEqual([
+			'get',
+			'getActivity',
+			'revoke',
+			'update',
+		]);
+	});
+
+	it('Create sends role, label and scope, and offers no authority role', () => {
+		expect(prop('grantRole').routing.send.property).toBe('role');
+		expect(prop('grantLabel').routing.send.property).toBe('label');
+		expect(prop('grantScopeKind').routing.send.property).toBe('scope.kind');
+		const roles = prop('grantRole').options.map((o) => o.value);
+		for (const authority of ['market_surveillance', 'notified_body', 'commission', 'customs']) {
+			expect(roles).not.toContain(authority);
+		}
+		expect(prop('grantScopeIds').displayOptions.show.grantScopeKind.sort()).toEqual([
+			'passports',
+			'products',
+		]);
+	});
+
+	it('Create warns that the token is shown once, and no other operation promises one', () => {
+		expect(grantOp('create').description).toMatch(/ONCE/);
+		expect(grantOp('create').description).toMatch(/do not log or store/);
+		for (const v of ['get', 'getAll']) expect(grantOp(v).description).toMatch(/never returns/i);
+	});
+
+	const updateOption = (name) => prop('grantUpdateFields').options.find((o) => o.name === name);
+
+	it('Update sends the scope as one object, so Scope IDs alone sends nothing', () => {
+		const ids = updateOption('scopeIds');
+		expect(ids.routing).toBeUndefined();
+		const kind = updateOption('scopeKind').routing.send;
+		expect(kind.property).toBe('scope');
+		// Evaluate the expression the way n8n would, for both kinds.
+		const run = (value, parameter) =>
+			new Function('$value', '$parameter', `return ${kind.value.slice(3, -2)}`)(value, parameter);
+		expect(run('company', { grantUpdateFields: { scopeIds: 'a, b' } })).toEqual({
+			kind: 'company',
+		});
+		expect(run('products', { grantUpdateFields: { scopeIds: 'a, b' } })).toEqual({
+			kind: 'products',
+			ids: ['a', 'b'],
+		});
+	});
+
+	it('Create and Update offer No Expiry, which sends null and silences Expires in Days', () => {
+		for (const [field, name] of [
+			['grantCreateFields', 'grantCreateFields'],
+			['grantUpdateFields', 'grantUpdateFields'],
+		]) {
+			const options = prop(name).options;
+			const noExpiry = options.find((o) => o.name === 'noExpiry');
+			expect(noExpiry.type, field).toBe('boolean');
+			expect(noExpiry.routing.send.property).toBe('expiresInDays');
+			const evalNo = (v) =>
+				new Function('$value', `return ${noExpiry.routing.send.value.slice(3, -2)}`)(v);
+			expect(evalNo(true)).toBeNull();
+			expect(evalNo(false)).toBeUndefined();
+			const days = options.find((o) => o.name === 'expiresInDays').routing.send.value;
+			const evalDays = (flag) =>
+				new Function('$value', '$parameter', `return ${days.slice(3, -2)}`)(30, {
+					[name]: { noExpiry: flag },
+				});
+			expect(evalDays(true)).toBeUndefined();
+			expect(evalDays(false)).toBe(30);
+		}
+	});
+
+	it('says authority grants are dashboard-only for update and revoke too', () => {
+		expect(grantOp('update').description).toMatch(/dashboard \(400 role_dashboard_only\)/);
+		expect(grantOp('revoke').description).toMatch(/dashboard \(400 role_dashboard_only\)/);
+		expect(grantOp('create').description).toMatch(/dashboard-only end to end/);
+	});
+
+	it('is offered as its own resource', () => {
+		const resource = props.find((p) => p.name === 'resource');
+		expect(resource.options.map((o) => o.value)).toContain('accessGrant');
 	});
 });

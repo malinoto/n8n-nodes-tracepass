@@ -69,6 +69,19 @@ export const productOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Links',
+				value: 'getLinks',
+				action: 'Get the passport links of a product',
+				description:
+					"Every published passport of the product with its serial, passport URL and status, plus the product's model page URL. The answer to a dealer or web shop asking for the links to a product's passports. Format JSON is paged; CSV and ZIP arrive as a binary file. JSON also carries a QR API URL that needs your API credentials. Counts as one passport read against the daily cap.",
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/products/{{$parameter["productId"]}}/links',
+					},
+				},
+			},
+			{
 				name: 'Get Many',
 				value: 'getAll',
 				action: 'Get many products',
@@ -77,6 +90,19 @@ export const productOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '/api/v1/products',
+					},
+				},
+			},
+			{
+				name: 'Get Model QR',
+				value: 'getModelQr',
+				action: 'Get the QR code of the model page of a product',
+				description:
+					"Render the QR code of the product's public model page (the GS1 address without a serial). The model page shows only what is true of every unit. Arrives as a binary file. Counts as one passport read against the daily cap.",
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/api/v1/products/{{$parameter["productId"]}}/links/model-qr',
 					},
 				},
 			},
@@ -125,9 +151,133 @@ export const productFields: INodeProperties[] = [
 		placeholder: 'e.g. 65a0f1b2c3d4e5f6a7b8c9d0',
 		description: 'The TracePass ID of the product',
 		displayOptions: {
-			show: { resource: ['product'], operation: ['archive', 'get', 'update'] },
+			show: {
+				resource: ['product'],
+				operation: ['archive', 'get', 'getLinks', 'getModelQr', 'update'],
+			},
 		},
 	},
+	// ---- Get Links -------------------------------------------------
+	{
+		displayName: 'Format',
+		name: 'linksFormat',
+		type: 'options',
+		default: 'json',
+		description: 'The output format. CSV and ZIP are returned as a binary file.',
+		options: [
+			{
+				name: 'CSV',
+				value: 'csv',
+				description: 'Every published passport as serial, passport_url, status',
+				routing: {
+					request: { encoding: 'arraybuffer', json: false },
+					output: {
+						postReceive: [{ type: 'binaryData', properties: { destinationProperty: 'data' } }],
+					},
+				},
+			},
+			{ name: 'JSON', value: 'json', description: 'Paged JSON with the model page URL' },
+			{
+				name: 'ZIP',
+				value: 'zip',
+				description:
+					'A passports.csv, a short message to forward and the model page QR (refused above 50,000 published passports; use CSV)',
+				routing: {
+					request: { encoding: 'arraybuffer', json: false },
+					output: {
+						postReceive: [{ type: 'binaryData', properties: { destinationProperty: 'data' } }],
+					},
+				},
+			},
+		],
+		displayOptions: {
+			show: { resource: ['product'], operation: ['getLinks'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'format' },
+		},
+	},
+	{
+		displayName: 'Limit',
+		name: 'linksLimit',
+		type: 'number',
+		typeOptions: { minValue: 1, maxValue: 5000 },
+		default: 1000,
+		description: 'Max number of passports per page',
+		displayOptions: {
+			show: { resource: ['product'], operation: ['getLinks'], linksFormat: ['json'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'limit' },
+		},
+	},
+	{
+		displayName: 'Cursor',
+		name: 'linksCursor',
+		type: 'string',
+		default: '',
+		description:
+			"Optional. The previous page's nextCursor, to fetch the next page. Leave empty for the first page.",
+		displayOptions: {
+			show: { resource: ['product'], operation: ['getLinks'], linksFormat: ['json'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'cursor', value: '={{ $value || undefined }}' },
+		},
+	},
+
+	// ---- Get Model QR ----------------------------------------------
+	{
+		displayName: 'Format',
+		name: 'modelQrFormat',
+		type: 'options',
+		default: 'svg',
+		description: 'The QR output format. Returned as a binary file.',
+		options: [
+			{
+				name: 'PNG',
+				value: 'png',
+				routing: {
+					request: { encoding: 'arraybuffer', json: false },
+					output: {
+						postReceive: [{ type: 'binaryData', properties: { destinationProperty: 'data' } }],
+					},
+				},
+			},
+			{
+				name: 'SVG',
+				value: 'svg',
+				routing: {
+					request: { encoding: 'arraybuffer', json: false },
+					output: {
+						postReceive: [{ type: 'binaryData', properties: { destinationProperty: 'data' } }],
+					},
+				},
+			},
+		],
+		displayOptions: {
+			show: { resource: ['product'], operation: ['getModelQr'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'format' },
+		},
+	},
+	{
+		displayName: 'GTIN',
+		name: 'modelQrGtin',
+		type: 'string',
+		default: '',
+		placeholder: 'e.g. 09506000134369',
+		description:
+			"Optional, 14 digits. Needed only when the product's published passports carry more than one GTIN (400 gtin_required otherwise).",
+		displayOptions: {
+			show: { resource: ['product'], operation: ['getModelQr'] },
+		},
+		routing: {
+			send: { type: 'query', property: 'gtin', value: '={{ $value || undefined }}' },
+		},
+	},
+
 	// ---- Create fields ---------------------------------------------
 	{
 		displayName: 'Name',

@@ -1,6 +1,7 @@
 import type { INodeType, INodeTypeDescription } from 'n8n-workflow';
 import { NodeConnectionTypes } from 'n8n-workflow';
 
+import { accessGrantOperations, accessGrantFields } from './AccessGrantDescription';
 import { productOperations, productFields } from './ProductDescription';
 import { passportOperations, passportFields } from './PassportDescription';
 import { epcisOperations, epcisFields } from './EpcisDescription';
@@ -16,7 +17,8 @@ import { templateOperations, templateFields } from './TemplateDescription';
  * (n8n's own HTTP layer makes the calls) — a requirement for n8n's
  * community-node verification.
  *
- * Five resources, mirroring the v1 API:
+ * Six resources, mirroring the v1 API:
+ *   - Access Grant — owner-issued access for partners to restricted passport data
  *   - Product   — the catalogue layer
  *   - Passport  — Digital Product Passports + their lifecycle
  *   - EPCIS     — GS1 EPCIS 2.0 supply-chain events
@@ -102,6 +104,12 @@ export class TracePass implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Access Grant',
+						value: 'accessGrant',
+						description:
+							'Share restricted passport data with a partner through a token, and manage the grants issued',
+					},
+					{
 						name: 'EPCIS Event',
 						value: 'epcis',
 						description: 'GS1 EPCIS 2.0 supply-chain events',
@@ -130,6 +138,8 @@ export class TracePass implements INodeType {
 				],
 				default: 'passport',
 			},
+			...accessGrantOperations,
+			...accessGrantFields,
 			...productOperations,
 			...productFields,
 			...passportOperations,

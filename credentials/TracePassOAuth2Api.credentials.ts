@@ -62,7 +62,7 @@ export class TracePassOAuth2Api implements ICredentialType {
 			type: 'string',
 			default: 'passports:read passports:write offline_access',
 			description:
-				'Space-separated scopes to request. Request only what the workflow needs; the user approves these on the consent screen. Include offline_access so n8n can refresh the token.',
+				'Space-separated scopes to request. Request only what the workflow needs; the user approves these on the consent screen. Include offline_access so n8n can refresh the token. Managing access grants needs access_grants:read / access_grants:write.',
 		},
 		{
 			displayName: 'Auth URI Query Parameters',

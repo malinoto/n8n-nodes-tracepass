@@ -25,7 +25,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'archive',
 				action: 'Archive a passport',
 				description:
-					'Permanently archive a passport. The public QR will return 404. Battery passports need a Reason.',
+					'Permanently archive a passport. Its public URL then shows an archive notice (machine formats answer 404) and only an authority access grant still reads it. Battery passports need a Reason.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -38,7 +38,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'archiveBySerial',
 				action: 'Archive a passport by serial',
 				description:
-					'Permanently archive a passport addressed by its serial number. The public QR will return 404. Battery passports need a Reason. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
+					'Permanently archive a passport addressed by its serial number. Its public URL then shows an archive notice (machine formats answer 404) and only an authority access grant still reads it. Battery passports need a Reason. If the serial is not unique in your account (serials are unique per GTIN) the API returns 409 \u2014 set the GTIN field to disambiguate.',
 				routing: {
 					request: {
 						method: 'POST',
@@ -295,7 +295,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'getSnapshot',
 				action: 'Get a passport snapshot',
 				description:
-					'Return the full archival record of one immutability snapshot — the complete JSON-LD the passport asserted at that time, plus contentHash and hashValid (re-verified on read). Counts as one passport read against the daily cap.',
+					'Return the full archival record of one immutability snapshot — the complete JSON-LD the passport asserted at that time, plus contentHash, hashMethod (jcs-sha256 = RFC 8785 JSON Canonicalization + SHA-256 for new snapshots; the earlier sorted-keys hash for older ones), previousHash (hash chain) and hashValid (re-verified on read). Counts as one passport read against the daily cap.',
 				routing: {
 					request: {
 						method: 'GET',
@@ -308,7 +308,7 @@ export const passportOperations: INodeProperties[] = [
 				value: 'getSnapshots',
 				action: 'Get passport snapshots',
 				description:
-					'Return a paginated list of snapshots for a passport, newest first. A snapshot is written on publish and after every change to a non-draft passport; each entry carries ID, version, reason (e.g. published, field_edit, status_change, baseline), actor, snapshotAt, contentHash, hashValid (re-verified on read), restorable flag, and field count. Set "As Of" to get the version valid at a given moment instead. Counts as one passport read against the daily cap.',
+					'Return a paginated list of snapshots for a passport, newest first. A snapshot is written on publish and after every change to a non-draft passport; each entry carries ID, version, reason (e.g. published, field_edit, status_change, baseline), actor, snapshotAt, contentHash, hashMethod (jcs-sha256 for new snapshots, the earlier sorted-keys hash for older ones), previousHash (hash chain), hashValid (re-verified on read), chainLink (ok, broken or unchained), restorable flag, and field count; the list also carries a chain verdict over all snapshots. Set "As Of" to get the version valid at a given moment instead. Counts as one passport read against the daily cap.',
 				routing: {
 					request: {
 						method: 'GET',
