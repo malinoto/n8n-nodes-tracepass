@@ -1018,6 +1018,7 @@ describe('TracePass node — the docs page lists the same operations', () => {
 	const siteDir = process.env.TRACEPASS_SITE_DIR ?? join(HERE, '..', '..', 'tracepass');
 	const prose = join(siteDir, 'src', 'data', 'api-docs', 'prose', 'n8n.tsx');
 	const LISTS = {
+		accessGrant: 'ACCESS_GRANT_OPS',
 		product: 'PRODUCT_OPS',
 		passport: 'PASSPORT_OPS',
 		epcis: 'EPCIS_OPS',
@@ -1110,5 +1111,62 @@ describe('TracePass product — dealer links and the model page QR', () => {
 	it('no operation still says the archived QR 404s', () => {
 		const text = JSON.stringify(props);
 		expect(text).not.toMatch(/public QR will return 404/);
+	});
+});
+
+describe('TracePass access grants — routes, body and the token warning', () => {
+	const props = new TracePass().description.properties;
+	const prop = (name) => props.find((p) => p.name === name);
+	const grantOp = (value) =>
+		props
+			.find(
+				(p) => p.name === 'operation' && p.displayOptions?.show?.resource?.[0] === 'accessGrant',
+			)
+			.options.find((o) => o.value === value);
+
+	it('maps each operation to its access-grants route and method', () => {
+		const route = (v) => `${grantOp(v).routing.request.method} ${grantOp(v).routing.request.url}`;
+		expect(route('create')).toBe('POST /api/v1/access-grants');
+		expect(route('getAll')).toBe('GET /api/v1/access-grants');
+		expect(route('get')).toBe('GET =/api/v1/access-grants/{{$parameter["accessGrantId"]}}');
+		expect(route('update')).toBe('PATCH =/api/v1/access-grants/{{$parameter["accessGrantId"]}}');
+		expect(route('revoke')).toBe('DELETE =/api/v1/access-grants/{{$parameter["accessGrantId"]}}');
+		expect(route('getActivity')).toBe(
+			'GET =/api/v1/access-grants/{{$parameter["accessGrantId"]}}/activity',
+		);
+	});
+
+	it('the grant ID is asked for exactly where the URL uses it', () => {
+		expect(prop('accessGrantId').displayOptions.show.operation.sort()).toEqual([
+			'get',
+			'getActivity',
+			'revoke',
+			'update',
+		]);
+	});
+
+	it('Create sends role, label and scope, and offers no authority role', () => {
+		expect(prop('grantRole').routing.send.property).toBe('role');
+		expect(prop('grantLabel').routing.send.property).toBe('label');
+		expect(prop('grantScopeKind').routing.send.property).toBe('scope.kind');
+		const roles = prop('grantRole').options.map((o) => o.value);
+		for (const authority of ['market_surveillance', 'notified_body', 'commission', 'customs']) {
+			expect(roles).not.toContain(authority);
+		}
+		expect(prop('grantScopeIds').displayOptions.show.grantScopeKind.sort()).toEqual([
+			'passports',
+			'products',
+		]);
+	});
+
+	it('Create warns that the token is shown once, and no other operation promises one', () => {
+		expect(grantOp('create').description).toMatch(/ONCE/);
+		expect(grantOp('create').description).toMatch(/do not log or store/);
+		for (const v of ['get', 'getAll']) expect(grantOp(v).description).toMatch(/never returns/i);
+	});
+
+	it('is offered as its own resource', () => {
+		const resource = props.find((p) => p.name === 'resource');
+		expect(resource.options.map((o) => o.value)).toContain('accessGrant');
 	});
 });

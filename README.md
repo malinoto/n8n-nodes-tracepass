@@ -32,6 +32,28 @@ In n8n: **Settings → Community Nodes → Install**, then enter
 The operations below mirror the node's `nodes/TracePass/*Description.ts`
 files; if they ever disagree, the code is right.
 
+### Access Grant
+Share restricted passport data with a partner (repairer, recycler, purchaser, …)
+through a secret `pa_` token, and manage the grants issued.
+- **Create** — a grant with a role, a label, a scope (whole company, chosen
+  products or chosen passports), and optionally a purpose, evidence and an
+  expiry (default 12 months). The secret token comes back **once**, in the
+  `token` field of the response: hand it to the recipient, do not log or store
+  it. It cannot be shown again; if lost, revoke the grant and create a new one.
+  A repeated request with the same idempotency key returns the grant with
+  `tokenDelivered: true` and no token
+- **Get** / **Get Many** — read one grant or list them (filter by role, status,
+  passport or product); never returns a token
+- **Get Activity** — the access log of a grant
+- **Update** — change a grant's label, purpose, evidence, expiry or scope
+- **Revoke** — end a grant at once; safe to repeat
+
+Needs an OAuth2 credential with the `access_grants:read` / `access_grants:write`
+scopes (writing as an admin), or an API key whose owner switched on "May manage
+access grants" for that key in the dashboard. Authority roles (market
+surveillance, notified body, commission, customs) can be issued only in the
+dashboard.
+
 ### Product
 
 - **Create** — add a product to the catalogue
