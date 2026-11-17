@@ -45,14 +45,16 @@ through a secret `pa_` token, and manage the grants issued.
 - **Get** / **Get Many** — read one grant or list them (filter by role, status,
   passport or product); never returns a token
 - **Get Activity** — the access log of a grant
-- **Update** — change a grant's label, purpose, evidence, expiry or scope
+- **Update** — change a grant's label, purpose, evidence, expiry (or choose
+  *No Expiry*) or scope; to change the scope set *Scope Kind*, plus *Scope IDs*
+  for chosen products or passports
 - **Revoke** — end a grant at once; safe to repeat
 
 Needs an OAuth2 credential with the `access_grants:read` / `access_grants:write`
 scopes (writing as an admin), or an API key whose owner switched on "May manage
 access grants" for that key in the dashboard. Authority roles (market
-surveillance, notified body, commission, customs) can be issued only in the
-dashboard.
+surveillance, notified body, commission, customs) are dashboard-only end to end:
+they cannot be created, changed or revoked through the API.
 
 ### Product
 

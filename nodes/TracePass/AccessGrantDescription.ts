@@ -65,7 +65,7 @@ export const accessGrantOperations: INodeProperties[] = [
 				value: 'create',
 				action: 'Create an access grant',
 				description:
-					'Share restricted passport data with a partner. The response carries the secret pa_ token in the token field ONCE: hand it to the recipient straight away, do not log or store it, it cannot be shown again (if lost, revoke the grant and create a new one). Authority roles are dashboard-only.',
+					'Share restricted passport data with a partner. The response carries the secret pa_ token in the token field ONCE: hand it to the recipient straight away, do not log or store it, it cannot be shown again (if lost, revoke the grant and create a new one). Authority-role grants are dashboard-only end to end: they cannot be created, changed or revoked through the API.',
 				routing: {
 					request: { method: 'POST', url: '/api/v1/access-grants' },
 				},
@@ -108,7 +108,8 @@ export const accessGrantOperations: INodeProperties[] = [
 				name: 'Revoke',
 				value: 'revoke',
 				action: 'Revoke an access grant',
-				description: 'End the grant at once. Safe to repeat.',
+				description:
+					'End the grant at once. Safe to repeat. An authority-role grant can be revoked only in the dashboard (400 role_dashboard_only).',
 				routing: {
 					request: {
 						method: 'DELETE',
@@ -120,7 +121,8 @@ export const accessGrantOperations: INodeProperties[] = [
 				name: 'Update',
 				value: 'update',
 				action: 'Update an access grant',
-				description: 'Change the label, purpose, evidence, expiry or scope of a grant',
+				description:
+					'Change the label, purpose, evidence, expiry or scope of a grant. An authority-role grant can be changed only in the dashboard (400 role_dashboard_only).',
 				routing: {
 					request: {
 						method: 'PATCH',
@@ -157,7 +159,7 @@ export const accessGrantFields: INodeProperties[] = [
 		required: true,
 		default: 'recycler',
 		description:
-			'What the recipient is. The role decides which restricted data it sees (for batteries, which Annex XIII points). Authority roles can be issued only in the dashboard.',
+			'What the recipient is. The role decides which restricted data it sees (for batteries, which Annex XIII points). Authority roles are dashboard-only.',
 		options: GRANT_ROLE_OPTIONS,
 		displayOptions: { show: { resource: ['accessGrant'], operation: ['create'] } },
 		routing: { send: { type: 'body', property: 'role' } },
@@ -243,7 +245,28 @@ export const accessGrantFields: INodeProperties[] = [
 				typeOptions: { minValue: 1, maxValue: 1825 },
 				default: 365,
 				description: 'Days until the grant expires. Left out, the default is 12 months.',
-				routing: { send: { type: 'body', property: 'expiresInDays' } },
+				routing: {
+					send: {
+						type: 'body',
+						property: 'expiresInDays',
+						value: '={{ $parameter.grantCreateFields.noExpiry ? undefined : $value }}',
+					},
+				},
+			},
+			{
+				displayName: 'No Expiry',
+				name: 'noExpiry',
+				type: 'boolean',
+				default: false,
+				description:
+					'Whether the grant never expires (the role must allow it). Takes precedence over Expires in Days.',
+				routing: {
+					send: {
+						type: 'body',
+						property: 'expiresInDays',
+						value: '={{ $value ? null : undefined }}',
+					},
+				},
 			},
 			{
 				displayName: 'Purpose',
@@ -302,7 +325,13 @@ export const accessGrantFields: INodeProperties[] = [
 				typeOptions: { minValue: 1, maxValue: 1825 },
 				default: 365,
 				description: 'Days until the grant expires',
-				routing: { send: { type: 'body', property: 'expiresInDays' } },
+				routing: {
+					send: {
+						type: 'body',
+						property: 'expiresInDays',
+						value: '={{ $parameter.grantUpdateFields.noExpiry ? undefined : $value }}',
+					},
+				},
 			},
 			{
 				displayName: 'Label',
@@ -311,6 +340,21 @@ export const accessGrantFields: INodeProperties[] = [
 				default: '',
 				description: 'Who the grant is for (max 120 characters)',
 				routing: { send: { type: 'body', property: 'label' } },
+			},
+			{
+				displayName: 'No Expiry',
+				name: 'noExpiry',
+				type: 'boolean',
+				default: false,
+				description:
+					'Whether the grant never expires (the role must allow it). Takes precedence over Expires in Days.',
+				routing: {
+					send: {
+						type: 'body',
+						property: 'expiresInDays',
+						value: '={{ $value ? null : undefined }}',
+					},
+				},
 			},
 			{
 				displayName: 'Purpose',
@@ -326,17 +370,24 @@ export const accessGrantFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description:
-					'Comma-separated product or passport IDs. Set the scope kind too; not needed for the whole company.',
-				routing: { send: { type: 'body', property: 'scope.ids', value: IDS_VALUE } },
+					'Comma-separated product or passport IDs. Sent only together with Scope Kind (Chosen Products or Chosen Passports); on its own it changes nothing.',
 			},
 			{
 				displayName: 'Scope Kind',
 				name: 'scopeKind',
 				type: 'options',
 				default: 'company',
-				description: 'Which passports the grant covers',
+				description:
+					'Replace the scope of the grant. For chosen products or passports also set Scope IDs.',
 				options: SCOPE_KIND_OPTIONS,
-				routing: { send: { type: 'body', property: 'scope.kind' } },
+				routing: {
+					send: {
+						type: 'body',
+						property: 'scope',
+						value:
+							'={{ $value === "company" ? { kind: "company" } : { kind: $value, ids: ($parameter.grantUpdateFields.scopeIds || "").split(",").map((s) => s.trim()).filter((s) => s) } }}',
+					},
+				},
 			},
 		],
 	},

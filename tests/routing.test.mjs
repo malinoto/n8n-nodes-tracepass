@@ -1165,6 +1165,54 @@ describe('TracePass access grants — routes, body and the token warning', () =>
 		for (const v of ['get', 'getAll']) expect(grantOp(v).description).toMatch(/never returns/i);
 	});
 
+	const updateOption = (name) => prop('grantUpdateFields').options.find((o) => o.name === name);
+
+	it('Update sends the scope as one object, so Scope IDs alone sends nothing', () => {
+		const ids = updateOption('scopeIds');
+		expect(ids.routing).toBeUndefined();
+		const kind = updateOption('scopeKind').routing.send;
+		expect(kind.property).toBe('scope');
+		// Evaluate the expression the way n8n would, for both kinds.
+		const run = (value, parameter) =>
+			new Function('$value', '$parameter', `return ${kind.value.slice(3, -2)}`)(value, parameter);
+		expect(run('company', { grantUpdateFields: { scopeIds: 'a, b' } })).toEqual({
+			kind: 'company',
+		});
+		expect(run('products', { grantUpdateFields: { scopeIds: 'a, b' } })).toEqual({
+			kind: 'products',
+			ids: ['a', 'b'],
+		});
+	});
+
+	it('Create and Update offer No Expiry, which sends null and silences Expires in Days', () => {
+		for (const [field, name] of [
+			['grantCreateFields', 'grantCreateFields'],
+			['grantUpdateFields', 'grantUpdateFields'],
+		]) {
+			const options = prop(name).options;
+			const noExpiry = options.find((o) => o.name === 'noExpiry');
+			expect(noExpiry.type, field).toBe('boolean');
+			expect(noExpiry.routing.send.property).toBe('expiresInDays');
+			const evalNo = (v) =>
+				new Function('$value', `return ${noExpiry.routing.send.value.slice(3, -2)}`)(v);
+			expect(evalNo(true)).toBeNull();
+			expect(evalNo(false)).toBeUndefined();
+			const days = options.find((o) => o.name === 'expiresInDays').routing.send.value;
+			const evalDays = (flag) =>
+				new Function('$value', '$parameter', `return ${days.slice(3, -2)}`)(30, {
+					[name]: { noExpiry: flag },
+				});
+			expect(evalDays(true)).toBeUndefined();
+			expect(evalDays(false)).toBe(30);
+		}
+	});
+
+	it('says authority grants are dashboard-only for update and revoke too', () => {
+		expect(grantOp('update').description).toMatch(/dashboard \(400 role_dashboard_only\)/);
+		expect(grantOp('revoke').description).toMatch(/dashboard \(400 role_dashboard_only\)/);
+		expect(grantOp('create').description).toMatch(/dashboard-only end to end/);
+	});
+
 	it('is offered as its own resource', () => {
 		const resource = props.find((p) => p.name === 'resource');
 		expect(resource.options.map((o) => o.value)).toContain('accessGrant');
