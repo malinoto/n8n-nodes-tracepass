@@ -3,3 +3,6 @@ dist/
 *.tsbuildinfo
 .env
 npm-debug.log*
+
+# Claude Code session worktrees (full copies of the repo)
+/.claude/worktrees/
